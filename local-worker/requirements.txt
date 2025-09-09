@@ -1,0 +1,24 @@
+# PyMessenger LocalWorker 依存関係
+
+# Supabase
+supabase==2.3.0
+gotrue==2.0.0
+postgrest==0.13.0
+realtime==1.0.2
+storage3==0.6.0
+
+# ブラウザ自動化
+playwright==1.40.0
+
+# 暗号化
+cryptography==41.0.7
+
+# 非同期処理
+asyncio-mqtt==0.16.2
+
+# ユーティリティ
+python-dotenv==1.0.0
+python-dateutil==2.8.2
+
+# ロギング
+colorlog==6.8.0
