@@ -152,8 +152,8 @@ export default function EnterpriseMessengerDashboard() {
         { event: '*', schema: 'public', table: 'system_notifications' },
         (payload) => {
           if (payload.new) {
-            const notification = payload.new
-            toast(notification.message, {
+            const notification = payload.new as any
+            toast(notification.message || 'New notification', {
               icon: notification.type === 'error' ? '❌' : 
                    notification.type === 'warning' ? '⚠️' : '✅',
               duration: 5000
