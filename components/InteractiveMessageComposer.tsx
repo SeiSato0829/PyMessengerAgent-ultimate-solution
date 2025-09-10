@@ -89,12 +89,11 @@ export default function InteractiveMessageComposer() {
     // Facebook認証確認
     const authStatus = await checkFacebookAuth()
     if (!authStatus.authenticated) {
-      toast.error('Facebook認証が必要です', {
-        action: {
-          label: '認証する',
-          onClick: () => window.open('/api/auth/facebook?action=login', '_blank')
-        }
-      })
+      toast.error('Facebook認証が必要です')
+      // 認証ウィンドウを自動的に開く
+      setTimeout(() => {
+        window.open('/api/auth/facebook?action=login', 'facebook-auth', 'width=600,height=700')
+      }, 1500)
       return
     }
 
