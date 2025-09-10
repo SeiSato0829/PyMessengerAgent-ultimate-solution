@@ -24,8 +24,8 @@ export async function GET() {
       try {
         const tasks = JSON.parse(fs.readFileSync(tasksFile, 'utf8'));
         taskStats.total = tasks.length;
-        taskStats.pending = tasks.filter(t => t.status === 'pending').length;
-        taskStats.completed = tasks.filter(t => t.status === 'completed').length;
+        taskStats.pending = tasks.filter((t: any) => t.status === 'pending').length;
+        taskStats.completed = tasks.filter((t: any) => t.status === 'completed').length;
       } catch {
         // エラー時はデフォルト値を使用
       }
