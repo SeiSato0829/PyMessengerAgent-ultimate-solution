@@ -54,10 +54,17 @@ export default function FacebookAuthPanel() {
       setAuthStatus(data)
 
       if (data.isDemoMode) {
-        toast('📝 デモモードで動作中', {
-          duration: 4000,
-          icon: '⚠️',
-        })
+        // 無効な環境変数が設定されている場合の警告
+        if (data.message?.includes('無効') || data.message?.includes('temp') || data.message?.includes('test')) {
+          toast.error('🚨 無効な環境変数が設定されています！Render.comで削除してください', {
+            duration: 8000,
+          })
+        } else {
+          toast('📝 デモモードで動作中', {
+            duration: 4000,
+            icon: '⚠️',
+          })
+        }
       } else if (data.authenticated) {
         toast.success('Facebook認証確認済み ✓', { duration: 2000 })
       } else if (data.error) {
@@ -183,9 +190,44 @@ export default function FacebookAuthPanel() {
 
         {/* Demo Mode Info */}
         {authStatus.isDemoMode && (
-          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 space-y-3">
-            <div className="text-yellow-400 font-medium text-lg">📝 デモモード</div>
+          <div className={`border rounded-lg p-4 space-y-3 ${
+            authStatus.message?.includes('無効') || authStatus.message?.includes('temp') || authStatus.message?.includes('test')
+              ? 'bg-red-500/10 border-red-500/30'
+              : 'bg-yellow-500/10 border-yellow-500/20'
+          }`}>
+            <div className={`font-medium text-lg ${
+              authStatus.message?.includes('無効') || authStatus.message?.includes('temp') || authStatus.message?.includes('test')
+                ? 'text-red-400'
+                : 'text-yellow-400'
+            }`}>
+              {authStatus.message?.includes('無効') || authStatus.message?.includes('temp') || authStatus.message?.includes('test')
+                ? '🚨 無効な環境変数が設定されています'
+                : '📝 デモモード'
+              }
+            </div>
             <div className="text-yellow-300/80 text-sm">{authStatus.message}</div>
+            
+            {/* 無効な環境変数が設定されている場合の緊急対応手順 */}
+            {(authStatus.message?.includes('無効') || authStatus.message?.includes('temp') || authStatus.message?.includes('test')) && (
+              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 space-y-2">
+                <div className="text-red-400 font-bold text-sm">🔥 今すぐ実行すべき対応：</div>
+                <ol className="text-red-300 text-xs space-y-1.5 list-decimal list-inside">
+                  <li>
+                    <a href="https://dashboard.render.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-200">
+                      Render.com
+                    </a>
+                    にログイン
+                  </li>
+                  <li>あなたのサービスを選択</li>
+                  <li>Environment タブを開く</li>
+                  <li>
+                    <span className="font-bold">FACEBOOK_APP_ID</span> と <span className="font-bold">FACEBOOK_APP_SECRET</span> を削除
+                  </li>
+                  <li>Save Changes をクリック</li>
+                  <li>5分待ってから再アクセス</li>
+                </ol>
+              </div>
+            )}
             
             {authStatus.demoFeatures && (
               <div className="bg-black/20 rounded-lg p-3 space-y-2">
@@ -282,8 +324,17 @@ export default function FacebookAuthPanel() {
               disabled={loading}
               className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ExternalLink className="h-4 w-4" />
-              <span>Facebook認証を開始</span>
+              {authStatus.message?.includes('無効') || authStatus.message?.includes('temp') || authStatus.message?.includes('test') ? (
+                <>
+                  <AlertCircle className="h-4 w-4" />
+                  <span>環境変数を修正してください</span>
+                </>
+              ) : (
+                <>
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Facebook認証を開始</span>
+                </>
+              )}
             </motion.button>
           )}
         </div>

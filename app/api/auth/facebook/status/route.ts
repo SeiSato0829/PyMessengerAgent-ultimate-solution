@@ -7,19 +7,49 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
+    // 環境変数の詳細チェック
+    const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
+    const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
+    
     // デモモードチェック（環境変数が設定されていない場合）
-    const isDemoMode = !process.env.FACEBOOK_APP_ID || 
-                       !process.env.FACEBOOK_APP_SECRET ||
-                       process.env.FACEBOOK_APP_ID === 'your-facebook-app-id' ||
-                       process.env.FACEBOOK_APP_SECRET === 'your-facebook-app-secret'
+    const isDemoMode = !FACEBOOK_APP_ID || 
+                       !FACEBOOK_APP_SECRET ||
+                       FACEBOOK_APP_ID === 'your-facebook-app-id' ||
+                       FACEBOOK_APP_SECRET === 'your-facebook-app-secret' ||
+                       FACEBOOK_APP_ID === 'demo-app-id' ||
+                       FACEBOOK_APP_SECRET === 'demo-app-secret' ||
+                       FACEBOOK_APP_ID.length < 15 || // 有効なFacebook App IDは15文字以上
+                       FACEBOOK_APP_SECRET.length < 20 || // 有効なSecretは32文字以上だが、余裕を持って20文字
+                       FACEBOOK_APP_ID.includes('temp') || // 一時的な値
+                       FACEBOOK_APP_ID.includes('test') || // テスト値
+                       FACEBOOK_APP_SECRET.includes('temp') || // 一時的な値
+                       FACEBOOK_APP_SECRET.includes('test') || // テスト値
+                       process.env.FORCE_DEMO_MODE === 'true'
+    
+    // 無効な環境変数が設定されているかどうかを判定
+    const hasInvalidEnvVars = FACEBOOK_APP_ID && FACEBOOK_APP_SECRET && (
+      FACEBOOK_APP_ID.length < 15 ||
+      FACEBOOK_APP_SECRET.length < 20 ||
+      FACEBOOK_APP_ID.includes('temp') ||
+      FACEBOOK_APP_ID.includes('test') ||
+      FACEBOOK_APP_SECRET.includes('temp') ||
+      FACEBOOK_APP_SECRET.includes('test')
+    )
 
     if (isDemoMode) {
-      console.log('📝 デモモードで動作中')
+      console.log('📝 デモモードで動作中', {
+        hasInvalidEnvVars,
+        appIdLength: FACEBOOK_APP_ID?.length || 0,
+        secretLength: FACEBOOK_APP_SECRET?.length || 0
+      })
+      
       // デモモード用の固定レスポンス
       return NextResponse.json({
         authenticated: false,
         isDemoMode: true,
-        message: 'デモモードで動作中です。Facebook認証を使用するには環境変数を設定してください。',
+        message: hasInvalidEnvVars
+          ? '🚨 無効な環境変数が設定されています！Render.comで FACEBOOK_APP_ID と FACEBOOK_APP_SECRET を削除してください。'
+          : 'デモモードで動作中です。Facebook認証を使用するには環境変数を設定してください。',
         requiredEnvVars: [
           'FACEBOOK_APP_ID',
           'FACEBOOK_APP_SECRET', 

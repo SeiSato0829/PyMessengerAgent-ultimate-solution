@@ -28,8 +28,12 @@ export async function GET(request: NextRequest) {
                        FACEBOOK_APP_SECRET === 'your-facebook-app-secret' ||
                        FACEBOOK_APP_ID === 'demo-app-id' ||
                        FACEBOOK_APP_SECRET === 'demo-app-secret' ||
-                       FACEBOOK_APP_ID.length < 10 || // 明らかに短いID
-                       FACEBOOK_APP_SECRET.length < 10 || // 明らかに短いSecret
+                       FACEBOOK_APP_ID.length < 15 || // 有効なFacebook App IDは15文字以上
+                       FACEBOOK_APP_SECRET.length < 20 || // 有効なSecretは32文字以上だが、余裕を持って20文字
+                       FACEBOOK_APP_ID.includes('temp') || // 一時的な値
+                       FACEBOOK_APP_ID.includes('test') || // テスト値
+                       FACEBOOK_APP_SECRET.includes('temp') || // 一時的な値
+                       FACEBOOK_APP_SECRET.includes('test') || // テスト値
                        process.env.FORCE_DEMO_MODE === 'true' // 強制デモモード
 
     // デバッグログ出力
@@ -44,8 +48,9 @@ export async function GET(request: NextRequest) {
     })
 
     // デモモードまたは環境変数未設定の場合は、常にデモページを返す
-    if (isDemoMode || action === 'demo') {
-      console.log('📝 Facebook認証：デモモード（環境変数未設定）')
+    // action === 'login' でも無効な環境変数の場合はデモページを表示
+    if (isDemoMode || action === 'demo' || (action === 'login' && isDemoMode)) {
+      console.log('📝 Facebook認証：デモモード（環境変数未設定または無効）')
       
       return new NextResponse(
         `<!DOCTYPE html>
@@ -328,8 +333,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // ここから本番モードの処理（環境変数が全て設定されている場合のみ）
-    if (action === 'login') {
+    // ここから本番モードの処理（環境変数が全て有効な場合のみ）
+    // この時点でisDemoModeがfalseであることが保証されている
+    if (action === 'login' && !isDemoMode) {
       console.log('✅ Facebook認証：本番モード開始')
       
       // Facebook OAuth認証URL生成
