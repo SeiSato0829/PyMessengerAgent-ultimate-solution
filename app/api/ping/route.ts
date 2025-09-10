@@ -35,7 +35,7 @@ export async function GET() {
       success: false,
       timestamp: new Date().toISOString(),
       message: 'Keep-alive ping failed',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
@@ -68,7 +68,7 @@ export async function POST() {
       success: false,
       timestamp: new Date().toISOString(),
       message: 'Manual GC failed',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
