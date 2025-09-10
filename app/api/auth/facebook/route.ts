@@ -6,9 +6,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase/client'
 
-// Facebook App設定
-const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID || 'demo-app-id'
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET || 'demo-app-secret'
+// Facebook App設定（デフォルト値を設定しない）
+const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
+const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
 const FACEBOOK_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.onrender.com'}/api/auth/facebook/callback`
 
 export async function GET(request: NextRequest) {
@@ -16,11 +16,14 @@ export async function GET(request: NextRequest) {
   const action = searchParams.get('action')
 
   try {
-    // デモモードチェック
+    // デモモードチェック（環境変数が未設定またはダミー値の場合）
     const isDemoMode = !process.env.FACEBOOK_APP_ID || 
-                       process.env.FACEBOOK_APP_ID === 'your-facebook-app-id'
+                       process.env.FACEBOOK_APP_ID === 'your-facebook-app-id' ||
+                       process.env.FACEBOOK_APP_ID === 'demo-app-id' ||
+                       !process.env.FACEBOOK_APP_SECRET ||
+                       process.env.FACEBOOK_APP_SECRET === 'demo-app-secret'
 
-    if (isDemoMode) {
+    if (isDemoMode || action === 'demo') {
       // デモモードではダミーページを返す
       return new NextResponse(
         `<!DOCTYPE html>
@@ -41,14 +44,18 @@ export async function GET(request: NextRequest) {
           <div class="container">
             <h1>📝 デモモード</h1>
             <div class="warning">
-              <h2>Facebook認証を使用するには</h2>
-              <p>以下の環境変数をRender.comで設定してください：</p>
+              <h2>⚠️ Facebook認証が利用できません</h2>
+              <p>Facebook認証を使用するには、以下の環境変数をRender.comで設定してください：</p>
               <ul class="env-list">
                 <li>FACEBOOK_APP_ID</li>
                 <li>FACEBOOK_APP_SECRET</li>
                 <li>NEXT_PUBLIC_SUPABASE_URL</li>
                 <li>NEXT_PUBLIC_SUPABASE_ANON_KEY</li>
               </ul>
+            </div>
+            <div style="margin-top: 30px;">
+              <p style="font-size: 14px; opacity: 0.8;">現在はデモモードで動作中です。</p>
+              <p style="font-size: 14px; opacity: 0.8;">実際のFacebook DM送信機能は使用できません。</p>
             </div>
             <button onclick="window.close()">閉じる</button>
           </div>
