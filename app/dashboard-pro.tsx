@@ -28,7 +28,7 @@ import {
   BellIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { useSupabase } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 // リアルタイム統計データの型定義
 interface Statistics {
@@ -73,7 +73,7 @@ export default function EnterpriseMessengerDashboard() {
   const [isRealTimeConnected, setIsRealTimeConnected] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   
-  const supabase = useSupabase()
+  // supabaseは既にインポート済み
   const intervalRef = useRef<NodeJS.Timeout>()
 
   // リアルタイムデータフェッチ

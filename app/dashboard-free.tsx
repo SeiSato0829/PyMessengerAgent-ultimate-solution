@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSupabase } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 // 軽量統計データ型
 interface Stats {
@@ -34,7 +34,7 @@ export default function FreeMessengerDashboard() {
   const [recipient, setRecipient] = useState('')
   const [loading, setLoading] = useState(false)
   
-  const supabase = useSupabase()
+  // supabaseは既にインポート済み
 
   // 軽量データフェッチ（5分間隔）
   useEffect(() => {
