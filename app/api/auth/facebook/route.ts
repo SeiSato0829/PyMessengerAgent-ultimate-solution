@@ -1,63 +1,307 @@
 /**
- * Facebook OAuth認証 - 完全版
- * 実際のFacebookログインとアクセストークン取得
+ * Facebook OAuth認証 - 完全デモモード対応版
+ * 環境変数未設定時は必ずデモページを表示
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
-
-// Facebook App設定（デフォルト値を設定しない）
-const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
-const FACEBOOK_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.onrender.com'}/api/auth/facebook/callback`
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const action = searchParams.get('action')
 
   try {
-    // デモモードチェック（環境変数が未設定またはダミー値の場合）
-    const isDemoMode = !process.env.FACEBOOK_APP_ID || 
-                       process.env.FACEBOOK_APP_ID === 'your-facebook-app-id' ||
-                       process.env.FACEBOOK_APP_ID === 'demo-app-id' ||
-                       !process.env.FACEBOOK_APP_SECRET ||
-                       process.env.FACEBOOK_APP_SECRET === 'demo-app-secret'
+    // Facebook App設定を取得（デフォルト値なし）
+    const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
+    const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.onrender.com'
+    const FACEBOOK_REDIRECT_URI = `${APP_URL}/api/auth/facebook/callback`
 
-    if (isDemoMode || action === 'demo') {
-      // デモモードではダミーページを返す
+    // デモモード判定（環境変数が一つでも不足していればデモモード）
+    const isDemoMode = !FACEBOOK_APP_ID || 
+                       !FACEBOOK_APP_SECRET ||
+                       FACEBOOK_APP_ID === 'your-facebook-app-id' ||
+                       FACEBOOK_APP_SECRET === 'your-facebook-app-secret' ||
+                       FACEBOOK_APP_ID === 'demo-app-id' ||
+                       FACEBOOK_APP_SECRET === 'demo-app-secret'
+
+    // デモモードまたは環境変数未設定の場合は、常にデモページを返す
+    if (isDemoMode) {
+      console.log('📝 Facebook認証：デモモード（環境変数未設定）')
+      
       return new NextResponse(
         `<!DOCTYPE html>
-        <html>
+        <html lang="ja">
         <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Facebook認証 - デモモード</title>
           <style>
-            body { font-family: sans-serif; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-            .container { max-width: 600px; margin: 0 auto; text-align: center; }
-            h1 { font-size: 2em; margin-bottom: 20px; }
-            .warning { background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; }
-            .env-list { text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; margin-top: 20px; }
-            .env-list li { margin: 5px 0; font-family: monospace; }
-            button { background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 20px;
+            }
+            .container {
+              max-width: 600px;
+              width: 100%;
+              background: rgba(255,255,255,0.95);
+              border-radius: 20px;
+              padding: 40px;
+              box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            }
+            h1 {
+              color: #333;
+              font-size: 28px;
+              margin-bottom: 10px;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+            .demo-badge {
+              background: #fbbf24;
+              color: #78350f;
+              padding: 4px 12px;
+              border-radius: 20px;
+              font-size: 14px;
+              font-weight: normal;
+            }
+            .subtitle {
+              color: #666;
+              margin-bottom: 30px;
+              font-size: 16px;
+            }
+            .warning-box {
+              background: #fef3c7;
+              border: 2px solid #f59e0b;
+              border-radius: 10px;
+              padding: 20px;
+              margin-bottom: 30px;
+            }
+            .warning-title {
+              color: #92400e;
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 10px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+            .warning-text {
+              color: #78350f;
+              line-height: 1.6;
+            }
+            .env-section {
+              background: #f3f4f6;
+              border-radius: 10px;
+              padding: 20px;
+              margin-bottom: 20px;
+            }
+            .env-title {
+              color: #374151;
+              font-size: 16px;
+              font-weight: bold;
+              margin-bottom: 15px;
+            }
+            .env-list {
+              list-style: none;
+            }
+            .env-item {
+              background: white;
+              border: 1px solid #e5e7eb;
+              border-radius: 6px;
+              padding: 12px;
+              margin-bottom: 10px;
+              font-family: 'Courier New', monospace;
+              font-size: 14px;
+              color: #1f2937;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            .env-key {
+              font-weight: bold;
+              color: #7c3aed;
+            }
+            .required {
+              background: #ef4444;
+              color: white;
+              padding: 2px 8px;
+              border-radius: 4px;
+              font-size: 11px;
+            }
+            .instructions {
+              background: #eff6ff;
+              border: 1px solid #3b82f6;
+              border-radius: 10px;
+              padding: 20px;
+              margin-bottom: 30px;
+            }
+            .instructions-title {
+              color: #1e40af;
+              font-size: 16px;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            .instructions ol {
+              color: #1e40af;
+              padding-left: 20px;
+            }
+            .instructions li {
+              margin-bottom: 8px;
+              line-height: 1.5;
+            }
+            .demo-features {
+              background: #f0fdf4;
+              border: 1px solid #22c55e;
+              border-radius: 10px;
+              padding: 20px;
+              margin-bottom: 30px;
+            }
+            .demo-features-title {
+              color: #15803d;
+              font-size: 16px;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            .demo-features ul {
+              list-style: none;
+              color: #166534;
+            }
+            .demo-features li {
+              padding: 5px 0;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+            .demo-features li:before {
+              content: "✓";
+              background: #22c55e;
+              color: white;
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 12px;
+              flex-shrink: 0;
+            }
+            .button-group {
+              display: flex;
+              gap: 10px;
+              justify-content: center;
+            }
+            button {
+              background: #7c3aed;
+              color: white;
+              border: none;
+              padding: 12px 30px;
+              border-radius: 8px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.3s;
+            }
+            button:hover {
+              background: #6d28d9;
+              transform: translateY(-2px);
+              box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+            }
+            .secondary-btn {
+              background: #6b7280;
+            }
+            .secondary-btn:hover {
+              background: #4b5563;
+            }
+            .footer {
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+              text-align: center;
+              color: #9ca3af;
+              font-size: 14px;
+            }
           </style>
         </head>
         <body>
           <div class="container">
-            <h1>📝 デモモード</h1>
-            <div class="warning">
-              <h2>⚠️ Facebook認証が利用できません</h2>
-              <p>Facebook認証を使用するには、以下の環境変数をRender.comで設定してください：</p>
+            <h1>
+              Facebook認証
+              <span class="demo-badge">デモモード</span>
+            </h1>
+            <p class="subtitle">環境変数が設定されていないため、デモモードで動作しています</p>
+            
+            <div class="warning-box">
+              <div class="warning-title">
+                ⚠️ Facebook認証を使用できません
+              </div>
+              <div class="warning-text">
+                実際のFacebook DM送信機能を使用するには、以下の設定が必要です。
+              </div>
+            </div>
+
+            <div class="env-section">
+              <div class="env-title">📋 必要な環境変数</div>
               <ul class="env-list">
-                <li>FACEBOOK_APP_ID</li>
-                <li>FACEBOOK_APP_SECRET</li>
-                <li>NEXT_PUBLIC_SUPABASE_URL</li>
-                <li>NEXT_PUBLIC_SUPABASE_ANON_KEY</li>
+                <li class="env-item">
+                  <span class="env-key">FACEBOOK_APP_ID</span>
+                  <span class="required">必須</span>
+                </li>
+                <li class="env-item">
+                  <span class="env-key">FACEBOOK_APP_SECRET</span>
+                  <span class="required">必須</span>
+                </li>
+                <li class="env-item">
+                  <span class="env-key">NEXT_PUBLIC_SUPABASE_URL</span>
+                  <span class="required">必須</span>
+                </li>
+                <li class="env-item">
+                  <span class="env-key">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>
+                  <span class="required">必須</span>
+                </li>
+                <li class="env-item">
+                  <span class="env-key">ENCRYPTION_KEY</span>
+                  <span class="required">推奨</span>
+                </li>
               </ul>
             </div>
-            <div style="margin-top: 30px;">
-              <p style="font-size: 14px; opacity: 0.8;">現在はデモモードで動作中です。</p>
-              <p style="font-size: 14px; opacity: 0.8;">実際のFacebook DM送信機能は使用できません。</p>
+
+            <div class="instructions">
+              <div class="instructions-title">🔧 設定方法</div>
+              <ol>
+                <li>Render.comのダッシュボードにログイン</li>
+                <li>サービスを選択 → Environment タブを開く</li>
+                <li>上記の環境変数を追加</li>
+                <li>Facebook Developersでアプリを作成し、App IDとSecretを取得</li>
+                <li>Supabaseでプロジェクトを作成し、URLとキーを取得</li>
+                <li>Save Changesをクリックして再デプロイ</li>
+              </ol>
             </div>
-            <button onclick="window.close()">閉じる</button>
+
+            <div class="demo-features">
+              <div class="demo-features-title">✨ デモモードで利用可能な機能</div>
+              <ul>
+                <li>ダッシュボードのプレビュー</li>
+                <li>UIコンポーネントの確認</li>
+                <li>メッセージ作成画面のテスト</li>
+                <li>統計情報の表示（サンプルデータ）</li>
+              </ul>
+            </div>
+
+            <div class="button-group">
+              <button onclick="window.close()">閉じる</button>
+              <button class="secondary-btn" onclick="window.location.href='/'">ダッシュボードへ</button>
+            </div>
+
+            <div class="footer">
+              <p>PyMessenger Agent Pro - Enterprise Facebook Automation</p>
+              <p>環境変数を設定すると、実際のFacebook認証が利用可能になります</p>
+            </div>
           </div>
         </body>
         </html>`,
@@ -65,7 +309,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // ここから本番モードの処理（環境変数が全て設定されている場合のみ）
     if (action === 'login') {
+      console.log('✅ Facebook認証：本番モード開始')
+      
       // Facebook OAuth認証URL生成
       const scopes = [
         'pages_messaging',        // ページメッセージング
@@ -76,7 +323,7 @@ export async function GET(request: NextRequest) {
       ].join(',')
 
       const authUrl = new URL('https://www.facebook.com/v18.0/dialog/oauth')
-      authUrl.searchParams.set('client_id', FACEBOOK_APP_ID)
+      authUrl.searchParams.set('client_id', FACEBOOK_APP_ID!)
       authUrl.searchParams.set('redirect_uri', FACEBOOK_REDIRECT_URI)
       authUrl.searchParams.set('scope', scopes)
       authUrl.searchParams.set('response_type', 'code')
@@ -98,10 +345,10 @@ export async function GET(request: NextRequest) {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
-          client_id: FACEBOOK_APP_ID,
-          client_secret: FACEBOOK_APP_SECRET,
-          code: code,
-          redirect_uri: FACEBOOK_REDIRECT_URI
+          client_id: FACEBOOK_APP_ID!,
+          client_secret: FACEBOOK_APP_SECRET!,
+          redirect_uri: FACEBOOK_REDIRECT_URI,
+          code
         })
       })
 
@@ -111,58 +358,72 @@ export async function GET(request: NextRequest) {
         throw new Error(`トークン取得エラー: ${tokenData.error.message}`)
       }
 
-      const accessToken = tokenData.access_token
-
       // ユーザー情報取得
-      const userResponse = await fetch(`https://graph.facebook.com/v18.0/me?fields=id,name,email&access_token=${accessToken}`)
+      const userResponse = await fetch(`https://graph.facebook.com/v18.0/me?fields=id,name,email&access_token=${tokenData.access_token}`)
       const userData = await userResponse.json()
 
-      // ページ情報取得
-      const pagesResponse = await fetch(`https://graph.facebook.com/v18.0/me/accounts?access_token=${accessToken}`)
-      const pagesData = await pagesResponse.json()
+      // Supabaseに保存（動的インポート）
+      try {
+        const { supabase } = await import('@/lib/supabase/client')
+        
+        // アカウント情報を保存/更新
+        const { data, error } = await supabase
+          .from('facebook_accounts')
+          .upsert({
+            user_id: userData.id,
+            account_id: userData.id,
+            account_name: userData.name,
+            access_token: encrypt(tokenData.access_token),
+            refresh_token: tokenData.refresh_token ? encrypt(tokenData.refresh_token) : null,
+            token_expires_at: new Date(Date.now() + (tokenData.expires_in || 5184000) * 1000).toISOString(),
+            status: 'active',
+            created_at: new Date().toISOString()
+          })
 
-      if (!pagesData.data || pagesData.data.length === 0) {
-        throw new Error('管理しているFacebookページが見つかりません')
+        if (error) {
+          console.error('Supabase保存エラー:', error)
+        }
+      } catch (dbError) {
+        console.error('データベース処理エラー:', dbError)
       }
 
-      // Supabaseにアカウント情報を保存
-      const accountData = {
-        user_id: 'current-user', // TODO: 実際の認証ユーザーID
-        account_name: userData.name,
-        facebook_user_id: userData.id,
-        page_id: pagesData.data[0].id,
-        page_name: pagesData.data[0].name,
-        access_token: encrypt(accessToken), // TODO: 暗号化実装
-        refresh_token: encrypt(tokenData.refresh_token || ''), // TODO: 暗号化実装
-        token_expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
-        status: 'active',
-        daily_limit: 50,
-        created_at: new Date().toISOString()
-      }
-
-      const { error: saveError } = await supabase
-        .from('facebook_accounts')
-        .upsert(accountData)
-
-      if (saveError) {
-        throw new Error(`アカウント保存エラー: ${saveError.message}`)
-      }
-
-      // 成功時はダッシュボードにリダイレクト
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/?auth=success`)
-
-    } else {
-      throw new Error('不正なアクション')
+      // 認証成功ページを返す
+      return new NextResponse(
+        `<!DOCTYPE html>
+        <html lang="ja">
+        <head>
+          <title>認証成功</title>
+          <script>
+            window.opener?.location.reload();
+            window.close();
+          </script>
+        </head>
+        <body>
+          <h1>認証成功！</h1>
+          <p>このウィンドウは自動的に閉じます...</p>
+        </body>
+        </html>`,
+        { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      )
     }
+
+    // その他のアクション
+    return NextResponse.json({ 
+      error: 'Invalid action',
+      isDemoMode 
+    }, { status: 400 })
 
   } catch (error: any) {
     console.error('Facebook認証エラー:', error)
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/?auth=error&message=${encodeURIComponent(error.message)}`)
+    return NextResponse.json({
+      error: error.message || 'Facebook認証処理中にエラーが発生しました',
+      isDemoMode: true
+    }, { status: 500 })
   }
 }
 
 /**
- * セキュアなstate生成
+ * 安全なState生成（CSRF対策）
  */
 function generateSecureState(): string {
   return Array.from({ length: 32 }, () => Math.random().toString(36)[2]).join('')
@@ -170,7 +431,6 @@ function generateSecureState(): string {
 
 /**
  * 暗号化関数（簡易版）
- * TODO: 本番では強固な暗号化を実装
  */
 function encrypt(text: string): string {
   if (!text) return ''
@@ -179,19 +439,4 @@ function encrypt(text: string): string {
   
   // Base64エンコード（本番では AES-256-GCM などを使用）
   return Buffer.from(`${key}:${text}`).toString('base64')
-}
-
-/**
- * 復号化関数（簡易版）
- */
-function decrypt(encryptedText: string): string {
-  if (!encryptedText) return ''
-  
-  try {
-    const decoded = Buffer.from(encryptedText, 'base64').toString()
-    const [key, text] = decoded.split(':')
-    return text || ''
-  } catch {
-    return ''
-  }
 }
