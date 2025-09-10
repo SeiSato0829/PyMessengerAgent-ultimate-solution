@@ -235,9 +235,12 @@ export default function PremiumMessengerDashboard() {
           })
         }
       )
-      .subscribe()
 
-    return () => supabase.removeChannel(channels)
+    channels.subscribe()
+
+    return () => {
+      supabase.removeChannel(channels)
+    }
   }, [])
 
   const getStatusColor = (status: AccountMetrics['status']) => {
