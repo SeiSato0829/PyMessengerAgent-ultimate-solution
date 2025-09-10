@@ -2,7 +2,376 @@
 @tailwind components;
 @tailwind utilities;
 
-/* カスタムスタイル */
+/* 8段階レスポンシブデザインシステム - 辛口で徹底的に対応 */
+/* ~320px: スマートフォン（標準） */
+/* 321px~480px: スマートフォン（大型）~タブレット（縦） */
+/* 481px~767px: タブレット（標準） */  
+/* 768px~1024px: タブレット（横）~小型PC */
+/* 1025px~1279px: PC・デスクトップ（標準） */
+/* 1280px~1440px: PC・デスクトップ（ワイド） */
+/* 1441px~1919px: ウルトラワイドモニター */
+/* 1920px以上: 大型モニター */
+
+@layer base {
+  /* ベースフォントサイズの段階的調整 - 文字サイズ漏れなし */
+  html {
+    /* ~320px: 小型スマートフォン */
+    font-size: 14px;
+    scroll-behavior: smooth;
+  }
+
+  @media (min-width: 321px) and (max-width: 480px) {
+    /* 321px~480px: 大型スマートフォン */
+    html { font-size: 15px; }
+  }
+
+  @media (min-width: 481px) and (max-width: 767px) {
+    /* 481px~767px: タブレット（標準） */
+    html { font-size: 16px; }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    /* 768px~1024px: タブレット（横）~小型PC */
+    html { font-size: 16px; }
+  }
+
+  @media (min-width: 1025px) and (max-width: 1279px) {
+    /* 1025px~1279px: PC・デスクトップ（標準） */
+    html { font-size: 17px; }
+  }
+
+  @media (min-width: 1280px) and (max-width: 1440px) {
+    /* 1280px~1440px: PC・デスクトップ（ワイド） */
+    html { font-size: 18px; }
+  }
+
+  @media (min-width: 1441px) and (max-width: 1919px) {
+    /* 1441px~1919px: ウルトラワイドモニター */
+    html { font-size: 19px; }
+  }
+
+  @media (min-width: 1920px) {
+    /* 1920px以上: 大型モニター */
+    html { font-size: 20px; }
+  }
+
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden; /* 横スクロール防止 */
+  }
+
+  /* 全要素のボックスサイジング統一 */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  /* 8段階レスポンシブテキストサイズ - 辛口で完璧実装 */
+  .text-responsive-xs {
+    font-size: 0.6875rem; line-height: 1rem; /* ~320px */
+  }
+  .text-responsive-sm {
+    font-size: 0.75rem; line-height: 1.125rem; /* ~320px */
+  }
+  .text-responsive-base {
+    font-size: 0.875rem; line-height: 1.25rem; /* ~320px */
+  }
+  .text-responsive-lg {
+    font-size: 1rem; line-height: 1.375rem; /* ~320px */
+  }
+  .text-responsive-xl {
+    font-size: 1.125rem; line-height: 1.5rem; /* ~320px */
+  }
+  .text-responsive-2xl {
+    font-size: 1.25rem; line-height: 1.625rem; /* ~320px */
+  }
+  .text-responsive-3xl {
+    font-size: 1.5rem; line-height: 1.875rem; /* ~320px */
+  }
+  .text-responsive-4xl {
+    font-size: 1.75rem; line-height: 2.125rem; /* ~320px */
+  }
+
+  @media (min-width: 321px) and (max-width: 480px) {
+    .text-responsive-xs { font-size: 0.7rem; line-height: 1rem; }
+    .text-responsive-sm { font-size: 0.8rem; line-height: 1.125rem; }
+    .text-responsive-base { font-size: 0.9rem; line-height: 1.25rem; }
+    .text-responsive-lg { font-size: 1rem; line-height: 1.375rem; }
+    .text-responsive-xl { font-size: 1.125rem; line-height: 1.5rem; }
+    .text-responsive-2xl { font-size: 1.25rem; line-height: 1.625rem; }
+    .text-responsive-3xl { font-size: 1.5rem; line-height: 1.875rem; }
+    .text-responsive-4xl { font-size: 1.875rem; line-height: 2.25rem; }
+  }
+
+  @media (min-width: 481px) and (max-width: 767px) {
+    .text-responsive-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-responsive-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-responsive-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-responsive-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-responsive-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-responsive-2xl { font-size: 1.375rem; line-height: 1.875rem; }
+    .text-responsive-3xl { font-size: 1.625rem; line-height: 2rem; }
+    .text-responsive-4xl { font-size: 2rem; line-height: 2.375rem; }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .text-responsive-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-responsive-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-responsive-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-responsive-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-responsive-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-responsive-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .text-responsive-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+    .text-responsive-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+  }
+
+  @media (min-width: 1025px) and (max-width: 1279px) {
+    .text-responsive-xs { font-size: 0.8125rem; line-height: 1.125rem; }
+    .text-responsive-sm { font-size: 0.9375rem; line-height: 1.375rem; }
+    .text-responsive-base { font-size: 1.0625rem; line-height: 1.625rem; }
+    .text-responsive-lg { font-size: 1.1875rem; line-height: 1.75rem; }
+    .text-responsive-xl { font-size: 1.3125rem; line-height: 1.875rem; }
+    .text-responsive-2xl { font-size: 1.5625rem; line-height: 2.125rem; }
+    .text-responsive-3xl { font-size: 1.9375rem; line-height: 2.375rem; }
+    .text-responsive-4xl { font-size: 2.3125rem; line-height: 2.625rem; }
+  }
+
+  @media (min-width: 1280px) and (max-width: 1440px) {
+    .text-responsive-xs { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-responsive-sm { font-size: 1rem; line-height: 1.5rem; }
+    .text-responsive-base { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-responsive-lg { font-size: 1.25rem; line-height: 1.875rem; }
+    .text-responsive-xl { font-size: 1.375rem; line-height: 2rem; }
+    .text-responsive-2xl { font-size: 1.625rem; line-height: 2.25rem; }
+    .text-responsive-3xl { font-size: 2rem; line-height: 2.5rem; }
+    .text-responsive-4xl { font-size: 2.375rem; line-height: 2.75rem; }
+  }
+
+  @media (min-width: 1441px) and (max-width: 1919px) {
+    .text-responsive-xs { font-size: 0.9375rem; line-height: 1.375rem; }
+    .text-responsive-sm { font-size: 1.0625rem; line-height: 1.625rem; }
+    .text-responsive-base { font-size: 1.1875rem; line-height: 1.875rem; }
+    .text-responsive-lg { font-size: 1.3125rem; line-height: 2rem; }
+    .text-responsive-xl { font-size: 1.4375rem; line-height: 2.125rem; }
+    .text-responsive-2xl { font-size: 1.6875rem; line-height: 2.375rem; }
+    .text-responsive-3xl { font-size: 2.0625rem; line-height: 2.625rem; }
+    .text-responsive-4xl { font-size: 2.4375rem; line-height: 2.875rem; }
+  }
+
+  @media (min-width: 1920px) {
+    .text-responsive-xs { font-size: 1rem; line-height: 1.5rem; }
+    .text-responsive-sm { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-responsive-base { font-size: 1.25rem; line-height: 2rem; }
+    .text-responsive-lg { font-size: 1.375rem; line-height: 2.125rem; }
+    .text-responsive-xl { font-size: 1.5rem; line-height: 2.25rem; }
+    .text-responsive-2xl { font-size: 1.75rem; line-height: 2.5rem; }
+    .text-responsive-3xl { font-size: 2.125rem; line-height: 2.75rem; }
+    .text-responsive-4xl { font-size: 2.5rem; line-height: 3rem; }
+  }
+
+  /* レスポンシブスペーシング - 辛口で完全対応 */
+  .spacing-responsive-xs { padding: 0.5rem; }
+  .spacing-responsive-sm { padding: 0.75rem; }
+  .spacing-responsive-md { padding: 1rem; }
+  .spacing-responsive-lg { padding: 1.25rem; }
+  .spacing-responsive-xl { padding: 1.5rem; }
+
+  @media (min-width: 321px) and (max-width: 480px) {
+    .spacing-responsive-xs { padding: 0.625rem; }
+    .spacing-responsive-sm { padding: 0.875rem; }
+    .spacing-responsive-md { padding: 1.125rem; }
+    .spacing-responsive-lg { padding: 1.375rem; }
+    .spacing-responsive-xl { padding: 1.625rem; }
+  }
+
+  @media (min-width: 481px) and (max-width: 767px) {
+    .spacing-responsive-xs { padding: 0.75rem; }
+    .spacing-responsive-sm { padding: 1rem; }
+    .spacing-responsive-md { padding: 1.25rem; }
+    .spacing-responsive-lg { padding: 1.5rem; }
+    .spacing-responsive-xl { padding: 1.75rem; }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .spacing-responsive-xs { padding: 0.75rem; }
+    .spacing-responsive-sm { padding: 1rem; }
+    .spacing-responsive-md { padding: 1.5rem; }
+    .spacing-responsive-lg { padding: 2rem; }
+    .spacing-responsive-xl { padding: 2.5rem; }
+  }
+
+  @media (min-width: 1025px) and (max-width: 1279px) {
+    .spacing-responsive-xs { padding: 1rem; }
+    .spacing-responsive-sm { padding: 1.25rem; }
+    .spacing-responsive-md { padding: 1.75rem; }
+    .spacing-responsive-lg { padding: 2.25rem; }
+    .spacing-responsive-xl { padding: 2.75rem; }
+  }
+
+  @media (min-width: 1280px) and (max-width: 1440px) {
+    .spacing-responsive-xs { padding: 1rem; }
+    .spacing-responsive-sm { padding: 1.5rem; }
+    .spacing-responsive-md { padding: 2rem; }
+    .spacing-responsive-lg { padding: 2.5rem; }
+    .spacing-responsive-xl { padding: 3rem; }
+  }
+
+  @media (min-width: 1441px) and (max-width: 1919px) {
+    .spacing-responsive-xs { padding: 1.25rem; }
+    .spacing-responsive-sm { padding: 1.75rem; }
+    .spacing-responsive-md { padding: 2.25rem; }
+    .spacing-responsive-lg { padding: 2.75rem; }
+    .spacing-responsive-xl { padding: 3.25rem; }
+  }
+
+  @media (min-width: 1920px) {
+    .spacing-responsive-xs { padding: 1.5rem; }
+    .spacing-responsive-sm { padding: 2rem; }
+    .spacing-responsive-md { padding: 2.5rem; }
+    .spacing-responsive-lg { padding: 3rem; }
+    .spacing-responsive-xl { padding: 3.5rem; }
+  }
+
+  /* レスポンシブグリッド - 完全自動調整 */
+  .responsive-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr; /* ~320px: 1列 */
+  }
+
+  @media (min-width: 321px) and (max-width: 480px) {
+    .responsive-grid { gap: 1.25rem; grid-template-columns: 1fr; }
+  }
+
+  @media (min-width: 481px) and (max-width: 767px) {
+    .responsive-grid { gap: 1.5rem; grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .responsive-grid { gap: 2rem; grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (min-width: 1025px) and (max-width: 1279px) {
+    .responsive-grid { gap: 2rem; grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (min-width: 1280px) and (max-width: 1440px) {
+    .responsive-grid { gap: 2.5rem; grid-template-columns: repeat(4, 1fr); }
+  }
+
+  @media (min-width: 1441px) and (max-width: 1919px) {
+    .responsive-grid { gap: 3rem; grid-template-columns: repeat(4, 1fr); }
+  }
+
+  @media (min-width: 1920px) {
+    .responsive-grid { gap: 3rem; grid-template-columns: repeat(5, 1fr); }
+  }
+
+  /* コンテナ幅の段階的最適化 */
+  .container-responsive {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 321px) and (max-width: 480px) {
+    .container-responsive {
+      padding-left: 1.25rem; padding-right: 1.25rem;
+    }
+  }
+
+  @media (min-width: 481px) and (max-width: 767px) {
+    .container-responsive {
+      max-width: 28rem; padding-left: 1.5rem; padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .container-responsive {
+      max-width: 42rem; padding-left: 2rem; padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1025px) and (max-width: 1279px) {
+    .container-responsive {
+      max-width: 60rem; padding-left: 2.5rem; padding-right: 2.5rem;
+    }
+  }
+
+  @media (min-width: 1280px) and (max-width: 1440px) {
+    .container-responsive {
+      max-width: 75rem; padding-left: 3rem; padding-right: 3rem;
+    }
+  }
+
+  @media (min-width: 1441px) and (max-width: 1919px) {
+    .container-responsive {
+      max-width: 90rem; padding-left: 3.5rem; padding-right: 3.5rem;
+    }
+  }
+
+  @media (min-width: 1920px) {
+    .container-responsive {
+      max-width: 112rem; padding-left: 4rem; padding-right: 4rem;
+    }
+  }
+
+  /* モバイル最適化テーブル */
+  .responsive-table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (max-width: 767px) {
+    .responsive-table table,
+    .responsive-table thead,
+    .responsive-table tbody,
+    .responsive-table th,
+    .responsive-table td,
+    .responsive-table tr {
+      display: block;
+    }
+
+    .responsive-table thead tr {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+
+    .responsive-table tr {
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .responsive-table td {
+      border: none;
+      position: relative;
+      padding-left: 35%;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .responsive-table td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 6px;
+      width: 30%;
+      text-align: left;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}
+
+/* 既存のカスタムスタイル */
 .animate-pulse-slow {
   animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -11,7 +380,6 @@
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
 }
 
-/* ローディングアニメーション */
 .loading-spinner {
   width: 20px;
   height: 20px;
@@ -26,7 +394,6 @@
   100% { transform: rotate(360deg); }
 }
 
-/* カスタムスクロールバー */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }

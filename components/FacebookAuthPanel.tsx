@@ -145,45 +145,107 @@ export default function FacebookAuthPanel() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white/10 backdrop-blur-xl rounded-2xl p-6 border ${getStatusColor()}`}
+      className={`bg-white/10 backdrop-blur-xl rounded-2xl border ${getStatusColor()}
+                 spacing-responsive-sm
+                 sm:spacing-responsive-md
+                 md:spacing-responsive-lg
+                 lg:spacing-responsive-lg
+                 xl:spacing-responsive-xl`}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-            <Shield className="h-5 w-5 text-white" />
+      {/* Header - 8段階レスポンシブ */}
+      <div className="flex items-center justify-between mb-3
+                    sm:mb-4
+                    md:mb-5
+                    lg:mb-6">
+        <div className="flex items-center space-x-2
+                      sm:space-x-3
+                      lg:space-x-4
+                      min-w-0 flex-1">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0
+                        w-8 h-8
+                        sm:w-9 sm:h-9
+                        md:w-10 md:h-10
+                        lg:w-11 lg:h-11
+                        xl:w-12 xl:h-12">
+            <Shield className="text-white
+                             h-4 w-4
+                             sm:h-4.5 sm:w-4.5
+                             md:h-5 md:w-5
+                             lg:h-5.5 lg:w-5.5
+                             xl:h-6 xl:w-6" />
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-white">Facebook認証</h3>
-            <p className="text-sm text-white/70">メッセージ送信に必要</p>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-white font-semibold truncate
+                         text-responsive-sm
+                         sm:text-responsive-base
+                         md:text-responsive-lg
+                         lg:text-responsive-xl">
+              <span className="hidden sm:inline">Facebook認証</span>
+              <span className="sm:hidden">FB認証</span>
+            </h3>
+            <p className="text-white/70 hidden sm:block
+                        text-responsive-xs
+                        md:text-responsive-sm
+                        truncate">
+              <span className="hidden md:inline">メッセージ送信に必要</span>
+              <span className="md:hidden">送信用</span>
+            </p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1
+                      sm:space-x-2
+                      flex-shrink-0">
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="p-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all disabled:opacity-50"
+            className="bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all disabled:opacity-50
+                     p-1.5
+                     sm:p-2
+                     md:p-2.5"
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`${refreshing ? 'animate-spin' : ''}
+                                  h-3.5 w-3.5
+                                  sm:h-4 sm:w-4
+                                  md:h-4.5 md:w-4.5`} />
           </button>
         </div>
       </div>
 
-      {/* Status Display */}
-      <div className="space-y-4">
+      {/* Status Display - 8段階レスポンシブ */}
+      <div className="space-y-3
+                    sm:space-y-4
+                    md:space-y-5">
         {/* Main Status */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2
+                      sm:space-x-3
+                      lg:space-x-4">
           {getStatusIcon()}
-          <div className="flex-1">
-            <div className="text-white font-medium">
+          <div className="flex-1 min-w-0">
+            <div className="text-white font-medium
+                          text-responsive-sm
+                          sm:text-responsive-base
+                          md:text-responsive-lg
+                          truncate">
               {loading 
-                ? '認証状態を確認中...' 
+                ? (<span>
+                    <span className="hidden sm:inline">認証状態を確認中...</span>
+                    <span className="sm:hidden">確認中...</span>
+                   </span>)
                 : authStatus.authenticated 
-                  ? '認証済み ✓' 
+                  ? (<span>
+                      <span className="hidden sm:inline">認証済み ✓</span>
+                      <span className="sm:hidden">認証済み</span>
+                     </span>)
                   : '未認証'}
             </div>
             {authStatus.error && (
-              <div className="text-red-400 text-sm mt-1">{authStatus.error}</div>
+              <div className="text-red-400 mt-1
+                            text-responsive-xs
+                            sm:text-responsive-sm
+                            truncate" 
+                   title={authStatus.error}>
+                {authStatus.error}
+              </div>
             )}
           </div>
         </div>

@@ -248,36 +248,75 @@ export default function InteractiveMessageComposer() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden"
-      >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-white/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-white" />
-              </div>
-              <h2 className="text-lg font-semibold text-white">インテリジェント メッセージ作成</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden"
+    >
+      {/* Header - 8段階レスポンシブ完全対応 */}
+      <div className="border-b border-white/10
+                    spacing-responsive-xs
+                    sm:spacing-responsive-sm
+                    md:spacing-responsive-md
+                    lg:spacing-responsive-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center min-w-0 flex-1
+                        space-x-2
+                        sm:space-x-3
+                        lg:space-x-4">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0
+                          w-6 h-6
+                          sm:w-7 sm:h-7
+                          md:w-8 md:h-8
+                          lg:w-9 lg:h-9
+                          xl:w-10 xl:h-10">
+              <Sparkles className="text-white
+                                h-3 w-3
+                                sm:h-3.5 sm:w-3.5
+                                md:h-4 md:w-4
+                                lg:h-4.5 lg:w-4.5
+                                xl:h-5 xl:w-5" />
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setIsPreview(!isPreview)}
-                className="px-3 py-1 bg-white/10 text-white/70 text-sm rounded-lg hover:bg-white/20 transition-all"
-              >
-                {isPreview ? '編集' : 'プレビュー'}
-              </button>
-              <button className="p-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all">
-                <Settings className="h-4 w-4" />
-              </button>
-            </div>
+            <h2 className="text-white font-semibold truncate
+                         text-responsive-sm
+                         sm:text-responsive-base
+                         md:text-responsive-lg
+                         lg:text-responsive-xl">
+              <span className="hidden md:inline">インテリジェント メッセージ作成</span>
+              <span className="hidden sm:inline md:hidden">メッセージ作成</span>
+              <span className="sm:hidden">作成</span>
+            </h2>
+          </div>
+          <div className="flex items-center space-x-1
+                        sm:space-x-2
+                        flex-shrink-0">
+            <button
+              onClick={() => setIsPreview(!isPreview)}
+              className="bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all
+                       text-xs px-2 py-1
+                       sm:text-sm sm:px-3 sm:py-1.5
+                       md:px-4"
+            >
+              <span className="hidden sm:inline">{isPreview ? '編集' : 'プレビュー'}</span>
+              <span className="sm:hidden">{isPreview ? '編' : '予'}</span>
+            </button>
+            <button className="bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all
+                             p-1.5
+                             sm:p-2
+                             md:p-2.5">
+              <Settings className="h-3 w-3
+                                sm:h-3.5 sm:w-3.5
+                                md:h-4 md:w-4" />
+            </button>
           </div>
         </div>
+      </div>
 
-        <div className="p-6">
+      <div className="spacing-responsive-sm
+                    sm:spacing-responsive-md
+                    md:spacing-responsive-lg
+                    lg:spacing-responsive-lg">
+        {/* Content Body - 8段階レスポンシブ */}
           {/* Recipients Section */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-white/70 mb-3">
