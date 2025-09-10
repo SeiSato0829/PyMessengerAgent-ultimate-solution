@@ -29,6 +29,12 @@ interface AuthStatus {
   isDemoMode?: boolean
   message?: string
   requiredEnvVars?: string[]
+  demoFeatures?: {
+    messaging: string
+    authentication: string
+    database: string
+  }
+  action?: string
 }
 
 export default function FacebookAuthPanel() {
@@ -177,15 +183,36 @@ export default function FacebookAuthPanel() {
 
         {/* Demo Mode Info */}
         {authStatus.isDemoMode && (
-          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 space-y-2">
-            <div className="text-yellow-400 font-medium">📝 デモモード</div>
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 space-y-3">
+            <div className="text-yellow-400 font-medium text-lg">📝 デモモード</div>
             <div className="text-yellow-300/80 text-sm">{authStatus.message}</div>
+            
+            {authStatus.demoFeatures && (
+              <div className="bg-black/20 rounded-lg p-3 space-y-2">
+                <div className="text-yellow-300/90 text-xs font-medium">デモ機能:</div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-yellow-300/60">メッセージ:</span>
+                    <span className="text-yellow-400">{authStatus.demoFeatures.messaging}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-yellow-300/60">認証:</span>
+                    <span className="text-yellow-400">{authStatus.demoFeatures.authentication}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-yellow-300/60">データベース:</span>
+                    <span className="text-yellow-400">{authStatus.demoFeatures.database}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {authStatus.requiredEnvVars && (
               <div className="mt-2 text-xs text-yellow-300/60">
                 <div className="font-medium mb-1">必要な環境変数:</div>
                 <ul className="list-disc list-inside space-y-0.5">
                   {authStatus.requiredEnvVars.map(v => (
-                    <li key={v}>{v}</li>
+                    <li key={v} className="font-mono">{v}</li>
                   ))}
                 </ul>
               </div>

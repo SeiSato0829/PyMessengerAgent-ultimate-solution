@@ -38,11 +38,17 @@ class DummySupabaseClient {
       limit: () => chain,
       single: () => Promise.resolve({ data: null, error: null }),
       maybeSingle: () => Promise.resolve({ data: null, error: null }),
-      then: (resolve: any) => {
-        resolve({ 
+      then: (resolve: any, reject?: any) => {
+        return Promise.resolve({ 
           data: [], 
           error: null 
-        })
+        }).then(resolve, reject)
+      },
+      catch: (reject: any) => {
+        return Promise.resolve({ 
+          data: [], 
+          error: null 
+        }).catch(reject)
       }
     }
     return chain

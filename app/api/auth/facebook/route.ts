@@ -7,15 +7,57 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase/client'
 
 // Facebook App設定
-const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID!
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET!
-const FACEBOOK_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/facebook/callback`
+const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID || 'demo-app-id'
+const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET || 'demo-app-secret'
+const FACEBOOK_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.onrender.com'}/api/auth/facebook/callback`
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const action = searchParams.get('action')
 
   try {
+    // デモモードチェック
+    const isDemoMode = !process.env.FACEBOOK_APP_ID || 
+                       process.env.FACEBOOK_APP_ID === 'your-facebook-app-id'
+
+    if (isDemoMode) {
+      // デモモードではダミーページを返す
+      return new NextResponse(
+        `<!DOCTYPE html>
+        <html>
+        <head>
+          <title>Facebook認証 - デモモード</title>
+          <style>
+            body { font-family: sans-serif; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+            .container { max-width: 600px; margin: 0 auto; text-align: center; }
+            h1 { font-size: 2em; margin-bottom: 20px; }
+            .warning { background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; }
+            .env-list { text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; margin-top: 20px; }
+            .env-list li { margin: 5px 0; font-family: monospace; }
+            button { background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>📝 デモモード</h1>
+            <div class="warning">
+              <h2>Facebook認証を使用するには</h2>
+              <p>以下の環境変数をRender.comで設定してください：</p>
+              <ul class="env-list">
+                <li>FACEBOOK_APP_ID</li>
+                <li>FACEBOOK_APP_SECRET</li>
+                <li>NEXT_PUBLIC_SUPABASE_URL</li>
+                <li>NEXT_PUBLIC_SUPABASE_ANON_KEY</li>
+              </ul>
+            </div>
+            <button onclick="window.close()">閉じる</button>
+          </div>
+        </body>
+        </html>`,
+        { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      )
+    }
+
     if (action === 'login') {
       // Facebook OAuth認証URL生成
       const scopes = [
