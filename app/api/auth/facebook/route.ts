@@ -135,7 +135,7 @@ function encrypt(text: string): string {
 /**
  * 復号化関数（簡易版）
  */
-export function decrypt(encryptedText: string): string {
+function decrypt(encryptedText: string): string {
   if (!encryptedText) return ''
   
   try {
