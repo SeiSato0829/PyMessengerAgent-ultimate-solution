@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import toast, { Toaster } from 'react-hot-toast';
+// import toast, { Toaster } from 'react-hot-toast';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -95,11 +95,11 @@ export default function Dashboard() {
         (payload) => {
           loadDashboardData();
           
-          if (payload.eventType === 'UPDATE' && payload.new.status === 'completed') {
-            toast.success(`タスク完了: ${payload.new.id.slice(0, 8)}`);
-          } else if (payload.eventType === 'UPDATE' && payload.new.status === 'failed') {
-            toast.error(`タスク失敗: ${payload.new.error_message}`);
-          }
+          // if (payload.eventType === 'UPDATE' && payload.new.status === 'completed') {
+          //   toast.success(`タスク完了: ${payload.new.id.slice(0, 8)}`);
+          // } else if (payload.eventType === 'UPDATE' && payload.new.status === 'failed') {
+          //   toast.error(`タスク失敗: ${payload.new.error_message}`);
+          // }
         }
       )
       .subscribe();
@@ -112,9 +112,9 @@ export default function Dashboard() {
         (payload) => {
           loadDashboardData();
           
-          if (payload.eventType === 'UPDATE' && payload.new.status === 'online') {
-            toast.success(`ワーカー接続: ${payload.new.worker_name}`);
-          }
+          // if (payload.eventType === 'UPDATE' && payload.new.status === 'online') {
+          //   toast.success(`ワーカー接続: ${payload.new.worker_name}`);
+          // }
         }
       )
       .subscribe();
@@ -127,7 +127,7 @@ export default function Dashboard() {
 
   const createTask = async () => {
     if (!newTask.account_id || !newTask.recipient_name || !newTask.message) {
-      toast.error('必須項目を入力してください');
+      alert('必須項目を入力してください');
       return;
     }
 
@@ -145,9 +145,9 @@ export default function Dashboard() {
       .single();
 
     if (error) {
-      toast.error('タスク作成失敗: ' + error.message);
+      alert('タスク作成失敗: ' + error.message);
     } else {
-      toast.success('タスクを作成しました');
+      alert('タスクを作成しました');
       setNewTask({ account_id: '', recipient_name: '', message: '', scheduled_at: '' });
       loadDashboardData();
     }
@@ -160,7 +160,7 @@ export default function Dashboard() {
       .eq('id', taskId);
 
     if (!error) {
-      toast.success('タスクをキャンセルしました');
+      alert('タスクをキャンセルしました');
       loadDashboardData();
     }
   };
@@ -180,7 +180,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Toaster />
+      {/* <Toaster /> */}
       
       {/* ヘッダー */}
       <header className="bg-white shadow">
