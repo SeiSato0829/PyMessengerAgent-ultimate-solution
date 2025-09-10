@@ -7,6 +7,25 @@ import { supabase } from '@/lib/supabase/client'
 
 export async function GET(request: NextRequest) {
   try {
+    // デモモードチェック
+    const isDemoMode = !process.env.FACEBOOK_APP_ID || 
+                       process.env.FACEBOOK_APP_ID === 'your-facebook-app-id'
+
+    if (isDemoMode) {
+      // デモモード用のレスポンス
+      return NextResponse.json({
+        authenticated: false,
+        isDemoMode: true,
+        message: 'デモモードで動作中です。Facebook認証を使用するには環境変数を設定してください。',
+        requiredEnvVars: [
+          'FACEBOOK_APP_ID',
+          'FACEBOOK_APP_SECRET',
+          'NEXT_PUBLIC_SUPABASE_URL',
+          'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+        ]
+      })
+    }
+
     // TODO: 実際の認証ユーザーIDを取得
     const userId = 'current-user'
 
@@ -19,7 +38,12 @@ export async function GET(request: NextRequest) {
       .gt('token_expires_at', new Date().toISOString())
 
     if (error) {
-      throw new Error(`アカウント確認エラー: ${error.message}`)
+      console.error('Supabaseエラー:', error)
+      // エラーでもクラッシュしないようにする
+      return NextResponse.json({
+        authenticated: false,
+        error: 'データベース接続エラー'
+      })
     }
 
     if (!accounts || accounts.length === 0) {

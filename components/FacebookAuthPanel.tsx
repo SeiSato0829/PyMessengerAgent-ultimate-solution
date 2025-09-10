@@ -26,6 +26,9 @@ interface AuthStatus {
   status?: string
   expiresAt?: string
   error?: string
+  isDemoMode?: boolean
+  message?: string
+  requiredEnvVars?: string[]
 }
 
 export default function FacebookAuthPanel() {
@@ -44,7 +47,12 @@ export default function FacebookAuthPanel() {
       const data = await response.json()
       setAuthStatus(data)
 
-      if (data.authenticated) {
+      if (data.isDemoMode) {
+        toast('📝 デモモードで動作中', {
+          duration: 4000,
+          icon: '⚠️',
+        })
+      } else if (data.authenticated) {
         toast.success('Facebook認証確認済み ✓', { duration: 2000 })
       } else if (data.error) {
         toast.error(`認証エラー: ${data.error}`)
@@ -167,8 +175,26 @@ export default function FacebookAuthPanel() {
           </div>
         </div>
 
+        {/* Demo Mode Info */}
+        {authStatus.isDemoMode && (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 space-y-2">
+            <div className="text-yellow-400 font-medium">📝 デモモード</div>
+            <div className="text-yellow-300/80 text-sm">{authStatus.message}</div>
+            {authStatus.requiredEnvVars && (
+              <div className="mt-2 text-xs text-yellow-300/60">
+                <div className="font-medium mb-1">必要な環境変数:</div>
+                <ul className="list-disc list-inside space-y-0.5">
+                  {authStatus.requiredEnvVars.map(v => (
+                    <li key={v}>{v}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Account Details */}
-        {authStatus.authenticated && (
+        {authStatus.authenticated && !authStatus.isDemoMode && (
           <div className="bg-white/5 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-white/70 text-sm">アカウント</span>
