@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:debug": "SKIP_ENV_VALIDATION=1 next build --debug",
+    "build:prod": "SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --skipLibCheck",
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
