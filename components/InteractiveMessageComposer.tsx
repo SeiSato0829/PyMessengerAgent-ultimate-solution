@@ -86,22 +86,140 @@ export default function InteractiveMessageComposer() {
       return
     }
 
+    // Facebook認証確認
+    const authStatus = await checkFacebookAuth()
+    if (!authStatus.authenticated) {
+      toast.error('Facebook認証が必要です', {
+        action: {
+          label: '認証する',
+          onClick: () => window.open('/api/auth/facebook?action=login', '_blank')
+        }
+      })
+      return
+    }
+
     try {
-      // Simulate sending
-      toast.promise(
-        new Promise((resolve) => setTimeout(resolve, 2000)),
+      const sendPromises = selectedRecipients.map(async (recipientId, index) => {
+        // 2秒間隔で送信（レート制限対応）
+        await new Promise(resolve => setTimeout(resolve, index * 2000))
+        
+        const response = await fetch('/api/messages/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId,
+            message: message.trim(),
+            accountId: authStatus.accountId,
+            scheduleTime: scheduleOption.type === 'scheduled' ? scheduleOption.datetime : null
+          })
+        })
+
+        const result = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(result.error || `送信失敗: ${recipientId}`)
+        }
+
+        return {
+          recipientId,
+          success: result.success,
+          messageId: result.messageId,
+          error: result.error
+        }
+      })
+
+      // プログレス付きトースト
+      const results = await toast.promise(
+        Promise.allSettled(sendPromises),
         {
           loading: `${selectedRecipients.length}件のメッセージを送信中...`,
-          success: `${selectedRecipients.length}件のメッセージを送信しました！`,
-          error: '送信に失敗しました'
+          success: (results) => {
+            const successful = results.filter(r => r.status === 'fulfilled').length
+            const failed = results.length - successful
+            
+            if (failed === 0) {
+              return `✅ ${successful}件すべて送信完了！`
+            } else {
+              return `⚠️ ${successful}件送信、${failed}件失敗`
+            }
+          },
+          error: '送信処理でエラーが発生しました'
+        },
+        {
+          style: {
+            minWidth: '300px',
+          },
+          success: {
+            duration: 5000,
+            icon: '🚀'
+          }
         }
       )
 
-      // Reset form
-      setMessage('')
-      setSelectedRecipients([])
+      // 結果の詳細分析
+      const detailedResults = results.map(result => 
+        result.status === 'fulfilled' ? result.value : { error: result.reason.message }
+      )
+
+      // 詳細結果をコンソールに出力（デバッグ用）
+      console.log('📊 送信結果詳細:', {
+        total: selectedRecipients.length,
+        successful: detailedResults.filter(r => r.success).length,
+        failed: detailedResults.filter(r => r.error).length,
+        details: detailedResults
+      })
+
+      // 失敗した送信の詳細表示
+      const failures = detailedResults.filter(r => r.error)
+      if (failures.length > 0) {
+        console.warn('❌ 送信失敗詳細:', failures)
+        toast.error(`${failures.length}件の送信に失敗しました。詳細はコンソールを確認してください。`)
+      }
+
+      // 成功時はフォームリセット
+      const successCount = detailedResults.filter(r => r.success).length
+      if (successCount > 0) {
+        setMessage('')
+        setSelectedRecipients([])
+        
+        // 成功統計を更新
+        updateSendStatistics(successCount, failures.length)
+      }
+
+    } catch (error: any) {
+      console.error('🔥 Send error:', error)
+      toast.error(`送信エラー: ${error.message}`)
+    }
+  }
+
+  // Facebook認証状態確認
+  const checkFacebookAuth = async (): Promise<{authenticated: boolean, accountId?: string, error?: string}> => {
+    try {
+      const response = await fetch('/api/auth/facebook/status')
+      const data = await response.json()
+      return data
     } catch (error) {
-      console.error('Send error:', error)
+      return { 
+        authenticated: false, 
+        error: '認証状態の確認に失敗しました' 
+      }
+    }
+  }
+
+  // 送信統計更新
+  const updateSendStatistics = async (successCount: number, failureCount: number) => {
+    try {
+      await fetch('/api/statistics/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sent: successCount,
+          failed: failureCount,
+          timestamp: new Date().toISOString()
+        })
+      })
+    } catch (error) {
+      console.warn('統計更新失敗:', error)
     }
   }
 

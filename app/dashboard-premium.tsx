@@ -56,6 +56,8 @@ import {
 import { supabase } from '@/lib/supabase/client'
 import InteractiveMessageComposer from '@/components/InteractiveMessageComposer'
 import AdvancedAnalyticsDashboard from '@/components/AdvancedAnalyticsDashboard'
+import FacebookAuthPanel from '@/components/FacebookAuthPanel'
+import RealtimeDebugPanel from '@/components/RealtimeDebugPanel'
 
 // Enhanced interfaces
 interface EnhancedStatistics {
@@ -448,7 +450,10 @@ export default function PremiumMessengerDashboard() {
         </div>
 
         {/* Interactive Components Section */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+          {/* Facebook Authentication Panel */}
+          <FacebookAuthPanel />
+          
           {/* Message Composer */}
           <InteractiveMessageComposer />
           
@@ -678,6 +683,9 @@ export default function PremiumMessengerDashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Floating Debug Panel */}
+      <RealtimeDebugPanel />
     </div>
   )
 }
