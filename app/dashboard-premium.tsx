@@ -1,0 +1,680 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  LineChart, 
+  Line, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  RadialBarChart,
+  RadialBar
+} from 'recharts'
+import toast, { Toaster } from 'react-hot-toast'
+import { 
+  MessageCircle,
+  Users,
+  BarChart3,
+  Settings,
+  Bell,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Send,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Zap,
+  Target,
+  Globe,
+  Smartphone,
+  Monitor,
+  Filter,
+  Download,
+  RefreshCw,
+  Play,
+  Pause,
+  MoreVertical,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  PieChart as PieChartIcon,
+  Activity
+} from 'lucide-react'
+import { supabase } from '@/lib/supabase/client'
+import InteractiveMessageComposer from '@/components/InteractiveMessageComposer'
+import AdvancedAnalyticsDashboard from '@/components/AdvancedAnalyticsDashboard'
+
+// Enhanced interfaces
+interface EnhancedStatistics {
+  totalMessages: number
+  dailyMessages: number
+  weeklyMessages: number
+  monthlyMessages: number
+  successRate: number
+  deliveryRate: number
+  openRate: number
+  responseRate: number
+  activeAccounts: number
+  queuedTasks: number
+  processingTasks: number
+  avgResponseTime: number
+  peakHour: string
+  topPerformingAccount: string
+  lastUpdateTime: string
+}
+
+interface DetailedMessageData {
+  time: string
+  hour: number
+  sent: number
+  delivered: number
+  opened: number
+  responded: number
+  failed: number
+  pending: number
+}
+
+interface AccountMetrics {
+  id: string
+  name: string
+  avatar: string
+  sent: number
+  delivered: number
+  opened: number
+  responded: number
+  successRate: number
+  responseRate: number
+  avgDeliveryTime: number
+  status: 'active' | 'warning' | 'error' | 'maintenance'
+  lastActive: string
+  dailyQuota: number
+  quotaUsed: number
+}
+
+interface RealtimeAlert {
+  id: string
+  type: 'success' | 'warning' | 'error' | 'info'
+  title: string
+  message: string
+  timestamp: string
+  read: boolean
+}
+
+const COLORS = {
+  primary: '#3B82F6',
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#8B5CF6',
+  chart: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4']
+}
+
+export default function PremiumMessengerDashboard() {
+  const [stats, setStats] = useState<EnhancedStatistics>({
+    totalMessages: 0,
+    dailyMessages: 0,
+    weeklyMessages: 0,
+    monthlyMessages: 0,
+    successRate: 0,
+    deliveryRate: 0,
+    openRate: 0,
+    responseRate: 0,
+    activeAccounts: 0,
+    queuedTasks: 0,
+    processingTasks: 0,
+    avgResponseTime: 0,
+    peakHour: '',
+    topPerformingAccount: '',
+    lastUpdateTime: new Date().toISOString()
+  })
+  
+  const [messageData, setMessageData] = useState<DetailedMessageData[]>([])
+  const [accountMetrics, setAccountMetrics] = useState<AccountMetrics[]>([])
+  const [alerts, setAlerts] = useState<RealtimeAlert[]>([])
+  const [isRealTimeConnected, setIsRealTimeConnected] = useState(false)
+  const [selectedTimeRange, setSelectedTimeRange] = useState('24h')
+  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
+  
+  const intervalRef = useRef<NodeJS.Timeout>()
+
+  // Enhanced data fetching
+  useEffect(() => {
+    const fetchEnhancedData = async () => {
+      try {
+        // Fetch comprehensive statistics
+        const { data: enhancedStats } = await supabase
+          .rpc('get_enhanced_statistics', { 
+            time_range: selectedTimeRange 
+          })
+
+        if (enhancedStats) {
+          setStats(enhancedStats)
+          setIsRealTimeConnected(true)
+        }
+
+        // Fetch detailed message trends
+        const { data: trendData } = await supabase
+          .from('hourly_detailed_stats')
+          .select('*')
+          .order('hour', { ascending: true })
+          .limit(24)
+
+        if (trendData) {
+          setMessageData(trendData)
+        }
+
+        // Fetch account performance metrics
+        const { data: accountData } = await supabase
+          .from('account_detailed_metrics')
+          .select('*')
+          .order('success_rate', { ascending: false })
+
+        if (accountData) {
+          setAccountMetrics(accountData)
+        }
+
+        // Fetch recent alerts
+        const { data: alertData } = await supabase
+          .from('system_alerts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        if (alertData) {
+          setAlerts(alertData)
+        }
+
+      } catch (error) {
+        console.error('Enhanced data fetch error:', error)
+        toast.error('データの更新に失敗しました')
+        setIsRealTimeConnected(false)
+      }
+    }
+
+    fetchEnhancedData()
+    
+    if (autoRefresh) {
+      intervalRef.current = setInterval(fetchEnhancedData, 15000) // 15秒間隔
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [selectedTimeRange, autoRefresh])
+
+  // Real-time subscription
+  useEffect(() => {
+    const channels = supabase
+      .channel('premium-dashboard')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'realtime_stats' },
+        (payload) => {
+          toast.success('統計データが更新されました', { 
+            icon: '📊',
+            duration: 3000,
+            style: {
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white'
+            }
+          })
+        }
+      )
+      .subscribe()
+
+    return () => supabase.removeChannel(channels)
+  }, [])
+
+  const getStatusColor = (status: AccountMetrics['status']) => {
+    switch (status) {
+      case 'active': return 'bg-green-500'
+      case 'warning': return 'bg-yellow-500'
+      case 'error': return 'bg-red-500'
+      case 'maintenance': return 'bg-blue-500'
+      default: return 'bg-gray-500'
+    }
+  }
+
+  const getMetricIcon = (metric: string) => {
+    switch (metric) {
+      case 'sent': return <Send className="h-5 w-5" />
+      case 'delivered': return <CheckCircle className="h-5 w-5" />
+      case 'opened': return <Eye className="h-5 w-5" />
+      case 'responded': return <MessageCircle className="h-5 w-5" />
+      default: return <Activity className="h-5 w-5" />
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }
+        }}
+      />
+      
+      {/* Enhanced Header */}
+      <header className="bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0 z-50">
+        <div className="mx-auto max-w-8xl px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <MessageCircle className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">
+                    PyMessenger Agent Premium
+                  </h1>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <div className={`w-2 h-2 rounded-full ${isRealTimeConnected ? 'bg-green-400' : 'bg-red-400'} animate-pulse`} />
+                    <span className="text-sm text-white/70">
+                      {isRealTimeConnected ? 'リアルタイム接続中' : '接続エラー'}
+                    </span>
+                    <span className="text-xs text-white/50">
+                      最終更新: {new Date(stats.lastUpdateTime).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              {/* Time Range Selector */}
+              <select 
+                value={selectedTimeRange}
+                onChange={(e) => setSelectedTimeRange(e.target.value)}
+                className="bg-white/10 border border-white/20 text-white text-sm rounded-lg px-3 py-2 backdrop-blur-sm"
+              >
+                <option value="1h">1時間</option>
+                <option value="24h">24時間</option>
+                <option value="7d">7日間</option>
+                <option value="30d">30日間</option>
+              </select>
+
+              {/* Auto Refresh Toggle */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  autoRefresh 
+                    ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+                    : 'bg-white/10 text-white/70 border border-white/20'
+                }`}
+              >
+                <RefreshCw className={`h-4 w-4 inline mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
+                自動更新
+              </motion.button>
+
+              {/* New Message Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
+              >
+                <Send className="h-4 w-4 inline mr-2" />
+                新規メッセージ
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-8xl px-6 lg:px-8 py-8">
+        {/* Enhanced KPI Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+          {[
+            { 
+              label: '総メッセージ数', 
+              value: stats.totalMessages.toLocaleString(), 
+              icon: MessageCircle, 
+              color: 'from-blue-500 to-blue-600',
+              change: '+12.5%',
+              changePositive: true
+            },
+            { 
+              label: '本日送信', 
+              value: stats.dailyMessages.toString(), 
+              icon: Send, 
+              color: 'from-green-500 to-green-600',
+              change: '+8.2%',
+              changePositive: true
+            },
+            { 
+              label: '配信率', 
+              value: `${stats.deliveryRate.toFixed(1)}%`, 
+              icon: CheckCircle, 
+              color: 'from-emerald-500 to-emerald-600',
+              change: '+2.1%',
+              changePositive: true
+            },
+            { 
+              label: '開封率', 
+              value: `${stats.openRate.toFixed(1)}%`, 
+              icon: Eye, 
+              color: 'from-purple-500 to-purple-600',
+              change: '-0.8%',
+              changePositive: false
+            },
+            { 
+              label: '返信率', 
+              value: `${stats.responseRate.toFixed(1)}%`, 
+              icon: MessageCircle, 
+              color: 'from-pink-500 to-pink-600',
+              change: '+5.3%',
+              changePositive: true
+            },
+            { 
+              label: '稼働アカウント', 
+              value: stats.activeAccounts.toString(), 
+              icon: Users, 
+              color: 'from-indigo-500 to-indigo-600',
+              change: '+1',
+              changePositive: true
+            },
+            { 
+              label: 'キュー', 
+              value: stats.queuedTasks.toString(), 
+              icon: Clock, 
+              color: 'from-orange-500 to-orange-600',
+              change: '-3',
+              changePositive: true
+            },
+            { 
+              label: '平均応答時間', 
+              value: `${stats.avgResponseTime}s`, 
+              icon: Zap, 
+              color: 'from-yellow-500 to-yellow-600',
+              change: '-12ms',
+              changePositive: true
+            }
+          ].map((metric, index) => (
+            <motion.div
+              key={metric.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 hover:bg-white/15 transition-all"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-white/70 text-xs font-medium mb-2">{metric.label}</p>
+                  <p className="text-white text-lg font-bold mb-1">{metric.value}</p>
+                  <div className="flex items-center space-x-1">
+                    {metric.changePositive ? (
+                      <ArrowUpRight className="h-3 w-3 text-green-400" />
+                    ) : (
+                      <ArrowDownRight className="h-3 w-3 text-red-400" />
+                    )}
+                    <span className={`text-xs font-medium ${
+                      metric.changePositive ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {metric.change}
+                    </span>
+                  </div>
+                </div>
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-r ${metric.color} flex items-center justify-center`}>
+                  <metric.icon className="h-5 w-5 text-white" />
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Interactive Components Section */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+          {/* Message Composer */}
+          <InteractiveMessageComposer />
+          
+          {/* Analytics Dashboard */}
+          <AdvancedAnalyticsDashboard />
+        </div>
+
+        {/* Enhanced Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Main Performance Chart */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-2 bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-white">
+                メッセージパフォーマンス
+              </h3>
+              <div className="flex space-x-2">
+                <button className="px-3 py-1 bg-white/10 text-white/70 text-xs rounded-lg">時間別</button>
+                <button className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-lg">日別</button>
+                <button className="px-3 py-1 bg-white/10 text-white/70 text-xs rounded-lg">週別</button>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={350}>
+              <AreaChart data={messageData}>
+                <defs>
+                  <linearGradient id="gradientSent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="gradientDelivered" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="time" stroke="rgba(255,255,255,0.5)" />
+                <YAxis stroke="rgba(255,255,255,0.5)" />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    color: 'white'
+                  }}
+                />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="sent"
+                  stroke="#3B82F6"
+                  fillOpacity={1}
+                  fill="url(#gradientSent)"
+                  name="送信"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="delivered"
+                  stroke="#10B981"
+                  fillOpacity={1}
+                  fill="url(#gradientDelivered)"
+                  name="配信"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="opened"
+                  stroke="#F59E0B"
+                  fillOpacity={0.6}
+                  fill="#F59E0B"
+                  name="開封"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
+
+          {/* Success Rate Gauge */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20"
+          >
+            <h3 className="text-lg font-semibold text-white mb-6">成功率</h3>
+            <div className="relative">
+              <ResponsiveContainer width="100%" height={250}>
+                <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="90%" data={[
+                  { name: '成功率', value: stats.successRate, fill: '#10B981' }
+                ]}>
+                  <RadialBar dataKey="value" cornerRadius={10} fill="#10B981" />
+                </RadialBarChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-white">{stats.successRate.toFixed(1)}%</div>
+                  <div className="text-sm text-white/70">総合成功率</div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Enhanced Account Management */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden mb-8"
+        >
+          <div className="px-6 py-4 border-b border-white/10">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">
+                アカウント詳細パフォーマンス
+              </h3>
+              <div className="flex space-x-2">
+                <button className="p-2 bg-white/10 rounded-lg text-white/70 hover:bg-white/20 transition-all">
+                  <Filter className="h-4 w-4" />
+                </button>
+                <button className="p-2 bg-white/10 rounded-lg text-white/70 hover:bg-white/20 transition-all">
+                  <Download className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-white/5">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                    アカウント
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                    ステータス
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                    送信数
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                    成功率
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                    返信率
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                    クォータ
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                    最終アクティブ
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                    アクション
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {accountMetrics.map((account, index) => (
+                  <motion.tr
+                    key={account.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="hover:bg-white/5 transition-all"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm font-medium">
+                              {account.name.charAt(0)}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-white">{account.name}</div>
+                          <div className="text-xs text-white/50">{account.id.slice(0, 8)}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(account.status)} text-white`}>
+                        {account.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                      {account.sent.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-16 bg-white/10 rounded-full h-2 mr-3">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full" 
+                            style={{ width: `${account.successRate}%` }}
+                          />
+                        </div>
+                        <span className="text-sm text-white">{account.successRate.toFixed(1)}%</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                      {account.responseRate.toFixed(1)}%
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-16 bg-white/10 rounded-full h-2 mr-3">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              (account.quotaUsed / account.dailyQuota) > 0.8 ? 'bg-red-500' : 'bg-blue-500'
+                            }`}
+                            style={{ width: `${(account.quotaUsed / account.dailyQuota) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-sm text-white">
+                          {account.quotaUsed}/{account.dailyQuota}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white/70">
+                      {new Date(account.lastActive).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button className="text-white/70 hover:text-white">
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  )
+}
