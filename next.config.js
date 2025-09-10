@@ -1,51 +1,63 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 無料プラン用超軽量設定
+  // プロプラン用の高性能設定
   output: 'standalone',
   
-  // 全ての最適化を無効化してメモリ削減
-  swcMinify: false,
-  
-  // 画像最適化完全無効
+  // 画像最適化
   images: {
-    unoptimized: true,
+    domains: ['graph.facebook.com', 'scontent.xx.fbcdn.net'],
+    formats: ['image/avif', 'image/webp'],
   },
   
-  // React厳密モード無効（メモリ節約）
-  reactStrictMode: false,
-  poweredByHeader: false,
+  // React厳密モード有効（品質向上）
+  reactStrictMode: true,
   
-  // Webpack超軽量設定
+  
+  // 実験的機能
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
+  
+  // セキュリティヘッダー
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          }
+        ]
+      }
+    ]
+  },
+  
+  // Webpack設定
   webpack: (config, { isServer }) => {
-    // 全ての重いライブラリを除外
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'react-hot-toast': false,
-      'recharts': false,
-      'framer-motion': false,
-      '@next/bundle-analyzer': false,
-      'playwright': false,
-      'lodash': false,
-    }
-    
-    // チャンクサイズを最小に
-    config.optimization.splitChunks = {
-      chunks: 'all',
-      maxSize: 20000, // 20KB以下
-      minSize: 0,
-    }
-    
-    // メモリ使用量制限
     if (!isServer) {
-      config.optimization.runtimeChunk = false
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      }
     }
-    
     return config
-  },
-  
-  // 環境変数でメモリ制限
-  env: {
-    NODE_OPTIONS: '--max-old-space-size=350', // 350MB制限
   }
 }
 
