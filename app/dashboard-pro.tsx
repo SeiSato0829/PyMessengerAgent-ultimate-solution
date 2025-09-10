@@ -20,14 +20,15 @@ import {
   Cell
 } from 'recharts'
 import toast, { Toaster } from 'react-hot-toast'
+// アイコンはlucide-reactを使用（package.jsonに含まれている）
 import { 
-  ChatBubbleLeftIcon,
-  UsersIcon,
-  ChartBarIcon,
-  CogIcon,
-  BellIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
+  MessageCircle as ChatBubbleLeftIcon,
+  Users as UsersIcon,
+  BarChart as ChartBarIcon,
+  Settings as CogIcon,
+  Bell as BellIcon,
+  AlertTriangle as ExclamationTriangleIcon
+} from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 
 // リアルタイム統計データの型定義
