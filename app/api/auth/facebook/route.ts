@@ -9,6 +9,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const action = searchParams.get('action')
 
+  // 強制デモモードチェック
+  if (process.env.FORCE_DEMO_MODE === 'true') {
+    console.log('⚠️ FORCE_DEMO_MODE is enabled')
+  }
+
   try {
     // Facebook App設定を取得（デフォルト値なし）
     const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
@@ -22,10 +27,24 @@ export async function GET(request: NextRequest) {
                        FACEBOOK_APP_ID === 'your-facebook-app-id' ||
                        FACEBOOK_APP_SECRET === 'your-facebook-app-secret' ||
                        FACEBOOK_APP_ID === 'demo-app-id' ||
-                       FACEBOOK_APP_SECRET === 'demo-app-secret'
+                       FACEBOOK_APP_SECRET === 'demo-app-secret' ||
+                       FACEBOOK_APP_ID.length < 10 || // 明らかに短いID
+                       FACEBOOK_APP_SECRET.length < 10 || // 明らかに短いSecret
+                       process.env.FORCE_DEMO_MODE === 'true' // 強制デモモード
+
+    // デバッグログ出力
+    console.log('🔍 Facebook Auth Debug:', {
+      action,
+      appIdExists: !!FACEBOOK_APP_ID,
+      appIdLength: FACEBOOK_APP_ID?.length || 0,
+      secretExists: !!FACEBOOK_APP_SECRET,
+      secretLength: FACEBOOK_APP_SECRET?.length || 0,
+      isDemoMode,
+      forceDemoMode: process.env.FORCE_DEMO_MODE === 'true'
+    })
 
     // デモモードまたは環境変数未設定の場合は、常にデモページを返す
-    if (isDemoMode) {
+    if (isDemoMode || action === 'demo') {
       console.log('📝 Facebook認証：デモモード（環境変数未設定）')
       
       return new NextResponse(
