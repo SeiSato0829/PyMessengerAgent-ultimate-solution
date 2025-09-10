@@ -55,7 +55,7 @@ export default function FacebookAccountModal({
       setPassword('')
     } catch (error: any) {
       console.error('Error adding account:', error)
-      toast.error(error.message || 'アカウント追加に失敗しました')
+      toast.error((error as any).message || 'アカウント追加に失敗しました')
     } finally {
       setIsLoading(false)
     }

@@ -115,7 +115,7 @@ export class RenderKeepAlive {
         }
 
       } catch (error) {
-        console.error('❌ Keep-alive ping エラー:', error.message);
+        console.error('❌ Keep-alive ping エラー:', error instanceof Error ? error.message : error);
       }
     }, this.config.pingInterval);
   }

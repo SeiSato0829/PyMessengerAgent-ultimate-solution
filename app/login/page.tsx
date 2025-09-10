@@ -44,7 +44,7 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error('認証エラー:', error)
-      toast.error(error.message || '認証に失敗しました')
+      toast.error((error as any).message || '認証に失敗しました')
     } finally {
       setIsLoading(false)
     }

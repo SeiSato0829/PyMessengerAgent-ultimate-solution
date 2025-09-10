@@ -68,7 +68,7 @@ export default function TaskCreateModal({
       setScheduledAt('')
     } catch (error: any) {
       console.error('Error creating task:', error)
-      toast.error(error.message || 'タスク作成に失敗しました')
+      toast.error((error as any).message || 'タスク作成に失敗しました')
     } finally {
       setIsLoading(false)
     }
