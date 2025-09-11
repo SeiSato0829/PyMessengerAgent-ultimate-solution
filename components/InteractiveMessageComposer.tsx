@@ -526,7 +526,7 @@ export default function InteractiveMessageComposer() {
             </div>
           </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   )
 }
