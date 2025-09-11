@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+// framer-motion removed for build compatibility
 import { 
   User, 
   Shield, 
@@ -142,15 +142,14 @@ export default function FacebookAuthPanel() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className={`bg-white/10 backdrop-blur-xl rounded-2xl border ${getStatusColor()}
                  spacing-responsive-sm
                  sm:spacing-responsive-md
                  md:spacing-responsive-lg
                  lg:spacing-responsive-lg
-                 xl:spacing-responsive-xl`}
+                 xl:spacing-responsive-xl
+                 animate-fadeIn`}
     >
       {/* Header - 8段階レスポンシブ */}
       <div className="flex items-center justify-between mb-3
@@ -364,27 +363,23 @@ export default function FacebookAuthPanel() {
         <div className="pt-2">
           {authStatus.authenticated ? (
             <div className="flex space-x-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition-all flex-1"
+                className="flex items-center space-x-2 px-4 py-2 bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex-1"
               >
                 <CheckCircle className="h-4 w-4" />
                 <span>認証済み</span>
-              </motion.button>
+              </button>
               <button className="p-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all">
                 <Settings className="h-4 w-4" />
               </button>
             </div>
           ) : (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {authStatus.message?.includes('無効') || authStatus.message?.includes('temp') || authStatus.message?.includes('test') ? (
                 <>
@@ -397,7 +392,7 @@ export default function FacebookAuthPanel() {
                   <span>Facebook認証を開始</span>
                 </>
               )}
-            </motion.button>
+            </button>
           )}
         </div>
 
@@ -416,6 +411,6 @@ export default function FacebookAuthPanel() {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// framer-motion removed for build compatibility
 import { 
   LineChart, 
   Line, 
@@ -211,13 +211,11 @@ export default function EnterpriseMessengerDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
               >
                 新規メッセージ送信
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
@@ -226,9 +224,7 @@ export default function EnterpriseMessengerDashboard() {
       {/* 統計カード */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+          <div
             className="bg-white rounded-lg shadow p-6"
           >
             <div className="flex items-center">
@@ -240,12 +236,9 @@ export default function EnterpriseMessengerDashboard() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+          <div
             className="bg-white rounded-lg shadow p-6"
           >
             <div className="flex items-center">
@@ -257,12 +250,9 @@ export default function EnterpriseMessengerDashboard() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+          <div
             className="bg-white rounded-lg shadow p-6"
           >
             <div className="flex items-center">
@@ -273,12 +263,9 @@ export default function EnterpriseMessengerDashboard() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+          <div
             className="bg-white rounded-lg shadow p-6"
           >
             <div className="flex items-center">
@@ -290,12 +277,9 @@ export default function EnterpriseMessengerDashboard() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+          <div
             className="bg-white rounded-lg shadow p-6"
           >
             <div className="flex items-center">
@@ -307,15 +291,13 @@ export default function EnterpriseMessengerDashboard() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* チャートセクション */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* メッセージトレンドチャート */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+          <div
             className="bg-white rounded-lg shadow p-6"
           >
             <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -354,12 +336,10 @@ export default function EnterpriseMessengerDashboard() {
                 />
               </AreaChart>
             </ResponsiveContainer>
-          </motion.div>
+          </div>
 
           {/* アカウントパフォーマンス */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+          <div
             className="bg-white rounded-lg shadow p-6"
           >
             <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -376,13 +356,11 @@ export default function EnterpriseMessengerDashboard() {
                 <Bar dataKey="delivered" fill="#82ca9d" name="配信数" />
               </BarChart>
             </ResponsiveContainer>
-          </motion.div>
+          </div>
         </div>
 
         {/* アカウントステータステーブル */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="bg-white rounded-lg shadow overflow-hidden"
         >
           <div className="px-6 py-4 border-b border-gray-200">
@@ -413,11 +391,8 @@ export default function EnterpriseMessengerDashboard() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {accountData.map((account, index) => (
-                  <motion.tr
+                  <tr
                     key={account.name}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.1 }}
                     className="hover:bg-gray-50"
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -440,12 +415,12 @@ export default function EnterpriseMessengerDashboard() {
                          account.status === 'warning' ? '警告' : 'エラー'}
                       </span>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

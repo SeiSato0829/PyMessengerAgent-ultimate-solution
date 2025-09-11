@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// framer-motion removed for build compatibility
 import { 
   Send, 
   User, 
@@ -247,11 +247,10 @@ export default function InteractiveMessageComposer() {
     }
   }
 
+  // Render.comビルドエラー回避のため一時的に通常のdivを使用
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden"
+    <div
+      className="w-full bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden transition-all duration-300 transform hover:scale-[1.01]"
     >
       {/* Header - 8段階レスポンシブ完全対応 */}
       <div className="border-b border-white/10
@@ -326,12 +325,9 @@ export default function InteractiveMessageComposer() {
               {selectedRecipients.map((recipientId) => {
                 const recipient = recipients.find(r => r.id === recipientId)
                 return (
-                  <motion.div
+                  <div
                     key={recipientId}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="flex items-center space-x-2 bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
+                    className="flex items-center space-x-2 bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm animate-fadeIn"
                   >
                     <User className="h-3 w-3" />
                     <span>{recipient?.name || recipientId}</span>
@@ -341,7 +337,7 @@ export default function InteractiveMessageComposer() {
                     >
                       <X className="h-3 w-3" />
                     </button>
-                  </motion.div>
+                  </div>
                 )
               })}
               <button
@@ -398,14 +394,10 @@ export default function InteractiveMessageComposer() {
             )}
 
             {/* Templates Dropdown */}
-            <AnimatePresence>
-              {showTemplates && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="mt-3 bg-white/10 border border-white/20 rounded-xl p-4"
-                >
+            {showTemplates && (
+              <div
+                className="mt-3 bg-white/10 border border-white/20 rounded-xl p-4 animate-slideDown"
+              >
                   <h4 className="text-sm font-medium text-white mb-3">テンプレート選択</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {templates.map((template) => (
@@ -419,9 +411,8 @@ export default function InteractiveMessageComposer() {
                       </button>
                     ))}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              </div>
+            )}
           </div>
 
           {/* Message Statistics */}
@@ -513,20 +504,18 @@ export default function InteractiveMessageComposer() {
               <button className="px-6 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all">
                 下書き保存
               </button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={handleSend}
                 disabled={!message.trim() || selectedRecipients.length === 0}
-                className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="h-4 w-4" />
                 <span>送信 ({selectedRecipients.length})</span>
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

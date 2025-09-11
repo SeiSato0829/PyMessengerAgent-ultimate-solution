@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// framer-motion removed for build compatibility
 import { 
   LineChart, 
   Line, 
@@ -373,9 +373,7 @@ export default function PremiumMessengerDashboard() {
               </select>
 
               {/* Auto Refresh Toggle */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => setAutoRefresh(!autoRefresh)}
                 className={`rounded-lg font-medium transition-all
                           text-xs px-2 py-1.5
@@ -390,17 +388,15 @@ export default function PremiumMessengerDashboard() {
               >
                 <RefreshCw className={`h-4 w-4 inline mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
                 自動更新
-              </motion.button>
+              </button>
 
               {/* New Message Button */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
               >
                 <Send className="h-4 w-4 inline mr-2" />
                 新規メッセージ
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
@@ -480,11 +476,8 @@ export default function PremiumMessengerDashboard() {
               changePositive: true
             }
           ].map((metric, index) => (
-            <motion.div
+            <div
               key={metric.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
               className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 hover:bg-white/15 transition-all
                        spacing-responsive-sm
                        sm:spacing-responsive-md
@@ -544,7 +537,7 @@ export default function PremiumMessengerDashboard() {
                                        lg:h-6 lg:w-6" />
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -579,9 +572,7 @@ export default function PremiumMessengerDashboard() {
                         xl:gap-8 xl:mb-10
                         2xl:gap-10 2xl:mb-12">
           {/* Main Performance Chart */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+          <div
             className="lg:col-span-2 bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20"
           >
             <div className="flex items-center justify-between mb-6">
@@ -644,12 +635,10 @@ export default function PremiumMessengerDashboard() {
                 />
               </AreaChart>
             </ResponsiveContainer>
-          </motion.div>
+          </div>
 
           {/* Success Rate Gauge */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+          <div
             className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20"
           >
             <h3 className="text-lg font-semibold text-white mb-6">成功率</h3>
@@ -668,13 +657,11 @@ export default function PremiumMessengerDashboard() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Enhanced Account Management */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden mb-8"
         >
           <div className="px-6 py-4 border-b border-white/10">
@@ -724,11 +711,8 @@ export default function PremiumMessengerDashboard() {
               </thead>
               <tbody className="divide-y divide-white/10">
                 {accountMetrics.map((account, index) => (
-                  <motion.tr
+                  <tr
                     key={account.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.1 }}
                     className="hover:bg-white/5 transition-all"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -791,12 +775,12 @@ export default function PremiumMessengerDashboard() {
                         <MoreVertical className="h-4 w-4" />
                       </button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Floating Debug Panel */}
