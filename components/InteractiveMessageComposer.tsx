@@ -81,11 +81,11 @@ export default function InteractiveMessageComposer() {
 
   const handleSend = async () => {
     if (!message.trim() || selectedRecipients.length === 0) {
-      toast.error('メッセージと宛先を選択してください')
+      toast.error('Please select message and recipients')
       return
     }
 
-    // Facebook認証確認
+    // Check Facebook authentication
     const authStatus = await checkFacebookAuth()
     if (!authStatus.authenticated) {
       toast.error('Facebook認証が必要です')
@@ -246,12 +246,11 @@ export default function InteractiveMessageComposer() {
     }
   }
 
-  // FORCE CACHE INVALIDATION - GUARANTEED ENGLISH RETURN
   return (
     <div
       className="w-full bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden transition-all duration-300 transform hover:scale-[1.01]"
     >
-      {/* Header - 8段階レスポンシブ完全対応 */}
+      {/* Header - Responsive Design */}
       <div className="border-b border-white/10
                     spacing-responsive-xs
                     sm:spacing-responsive-sm
