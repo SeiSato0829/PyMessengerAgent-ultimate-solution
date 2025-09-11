@@ -12,7 +12,10 @@ export async function GET(request: NextRequest) {
     
     if (authHeader) {
       try {
-        const authData = JSON.parse(authHeader)
+        // Base64デコード
+        const decodedData = decodeURIComponent(atob(authHeader))
+        const authData = JSON.parse(decodedData)
+        
         if (authData.authenticated && authData.expiresAt) {
           const expiresAt = new Date(authData.expiresAt)
           const isExpired = expiresAt < new Date()

@@ -52,10 +52,12 @@ export default function FacebookAuthPanel() {
       // LocalStorageから認証データを取得
       const localAuthData = localStorage.getItem('facebook_auth')
       
-      // 認証データをヘッダーに含めてAPIを呼び出す
+      // 認証データをBase64エンコードしてヘッダーに含める（HTTPヘッダーは ASCII only）
       const headers: HeadersInit = {}
       if (localAuthData) {
-        headers['x-auth-data'] = localAuthData
+        // Base64エンコードして日本語文字を回避
+        const encodedData = btoa(encodeURIComponent(localAuthData))
+        headers['x-auth-data'] = encodedData
       }
       
       const response = await fetch('/api/auth/facebook/status', { headers })
