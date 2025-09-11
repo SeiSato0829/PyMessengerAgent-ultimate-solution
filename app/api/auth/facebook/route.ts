@@ -339,12 +339,11 @@ export async function GET(request: NextRequest) {
       console.log('✅ Facebook認証：本番モード開始')
       
       // Facebook OAuth認証URL生成
+      // 開発モードで使用可能な基本権限のみ要求
       const scopes = [
-        'pages_messaging',        // ページメッセージング
-        'pages_manage_metadata',  // ページ管理
-        'pages_read_engagement',  // エンゲージメント読み取り
-        'pages_show_list',        // ページリスト表示
-        'business_management'     // ビジネス管理
+        'email',           // メールアドレス取得（基本権限）
+        'public_profile'   // 公開プロフィール（基本権限）
+        // 注意: pages_messaging等の高度な権限はApp Review承認後に追加
       ].join(',')
 
       const authUrl = new URL('https://www.facebook.com/v18.0/dialog/oauth')
