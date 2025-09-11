@@ -339,14 +339,11 @@ export async function GET(request: NextRequest) {
       console.log('✅ Facebook認証：本番モード開始')
       
       // Facebook OAuth認証URL生成
-      // 開発モードで使用可能な基本権限のみ要求
-      const scopes = [
-        'email',           // メールアドレス取得（基本権限）
-        'public_profile'   // 公開プロフィール（基本権限）
-        // 注意: pages_messaging等の高度な権限はApp Review承認後に追加
-      ].join(',')
+      // 最小限の権限のみ要求（public_profileのみ）
+      // emailも一時的に削除して動作確認
+      const scopes = 'public_profile' // 権限なしか、public_profileのみで開始
 
-      const authUrl = new URL('https://www.facebook.com/v18.0/dialog/oauth')
+      const authUrl = new URL('https://www.facebook.com/v19.0/dialog/oauth') // 最新バージョンに更新
       authUrl.searchParams.set('client_id', FACEBOOK_APP_ID!)
       authUrl.searchParams.set('redirect_uri', FACEBOOK_REDIRECT_URI)
       authUrl.searchParams.set('scope', scopes)
@@ -365,7 +362,7 @@ export async function GET(request: NextRequest) {
       }
 
       // アクセストークン取得
-      const tokenResponse = await fetch(`https://graph.facebook.com/v18.0/oauth/access_token`, {
+      const tokenResponse = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
@@ -382,8 +379,8 @@ export async function GET(request: NextRequest) {
         throw new Error(`トークン取得エラー: ${tokenData.error.message}`)
       }
 
-      // ユーザー情報取得
-      const userResponse = await fetch(`https://graph.facebook.com/v18.0/me?fields=id,name,email&access_token=${tokenData.access_token}`)
+      // ユーザー情報取得（emailを除外、id,nameのみ）
+      const userResponse = await fetch(`https://graph.facebook.com/v19.0/me?fields=id,name&access_token=${tokenData.access_token}`)
       const userData = await userResponse.json()
 
       // Supabaseに保存（動的インポート）
