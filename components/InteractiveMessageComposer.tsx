@@ -246,6 +246,7 @@ export default function InteractiveMessageComposer() {
     }
   }
 
+  // FORCE CACHE INVALIDATION - GUARANTEED ENGLISH RETURN
   return (
     <div
       className="w-full bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden transition-all duration-300 transform hover:scale-[1.01]"
