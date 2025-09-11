@@ -1,7 +1,22 @@
 /** @type {import('next').NextConfig} */
+
+// 環境変数を明示的にログ出力（ビルド時の確認用）
+console.log('='.repeat(60))
+console.log('Next.js Config - 環境変数状態:')
+console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ 設定済み' : '❌ 未設定')
+console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ 設定済み' : '❌ 未設定')
+console.log('='.repeat(60))
+
 const nextConfig = {
   // プロプラン用の高性能設定
   output: 'standalone',
+  
+  // 環境変数を明示的に公開（Render.comで確実に読み込むため）
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY || '',
+  },
   
   // 画像最適化
   images: {
@@ -58,8 +73,21 @@ const nextConfig = {
     ]
   },
   
+  // ビルドキャッシュを無効化（環境変数の変更を確実に反映）
+  generateBuildId: async () => {
+    return Date.now().toString()
+  },
+  
   // Webpack設定
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
+    // 環境変数の強制的な埋め込み
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL || ''),
+        'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''),
+      })
+    )
+    
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

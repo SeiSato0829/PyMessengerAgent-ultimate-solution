@@ -9,8 +9,7 @@ services:
     region: oregon
     buildCommand: |
       echo "🚀 Starting build for Starter plan..."
-      npm ci
-      npm run build
+      bash scripts/render-build.sh
       echo "✅ Build completed successfully"
       
     startCommand: npm start
