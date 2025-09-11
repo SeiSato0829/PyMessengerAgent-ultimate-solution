@@ -115,30 +115,25 @@ export async function GET(request: NextRequest) {
       userName: userData.name
     })
 
-    // Supabaseへの保存を試みる（オプション）
-    try {
-      const { supabase } = await import('@/lib/supabase/client')
-      
-      const { data, error: dbError } = await supabase
-        .from('facebook_accounts')
-        .upsert({
-          user_id: userData.id,
-          account_id: userData.id,
-          account_name: userData.name,
-          access_token: tokenData.access_token, // 本番環境では暗号化必須
-          token_expires_at: new Date(Date.now() + (tokenData.expires_in || 5184000) * 1000).toISOString(),
-          status: 'active',
-          created_at: new Date().toISOString()
-        })
-
-      if (dbError) {
-        console.error('Supabase保存エラー（非致命的）:', dbError)
-      } else {
-        console.log('Supabaseに保存成功')
-      }
-    } catch (dbError) {
-      console.error('データベース処理スキップ:', dbError)
+    // 認証情報をCookieに保存（データベース不要の簡易実装）
+    const authData = {
+      authenticated: true,
+      userId: userData.id,
+      userName: userData.name,
+      accessToken: tokenData.access_token,
+      expiresAt: new Date(Date.now() + (tokenData.expires_in || 5184000) * 1000).toISOString(),
+      timestamp: new Date().toISOString()
     }
+
+    // LocalStorageに保存するためのスクリプトを成功ページに埋め込む
+    const authDataScript = `
+      <script>
+        // 認証データをLocalStorageに保存
+        const authData = ${JSON.stringify(authData)};
+        localStorage.setItem('facebook_auth', JSON.stringify(authData));
+        console.log('認証データをLocalStorageに保存しました');
+      </script>
+    `
 
     // 成功ページを返す
     return new NextResponse(
@@ -198,6 +193,7 @@ export async function GET(request: NextRequest) {
             100% { transform: rotate(360deg); }
           }
         </style>
+        ${authDataScript}
         <script>
           // 親ウィンドウをリロードして閉じる
           setTimeout(() => {

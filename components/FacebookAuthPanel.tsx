@@ -48,7 +48,17 @@ export default function FacebookAuthPanel() {
   const checkAuthStatus = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/auth/facebook/status')
+      
+      // LocalStorageから認証データを取得
+      const localAuthData = localStorage.getItem('facebook_auth')
+      
+      // 認証データをヘッダーに含めてAPIを呼び出す
+      const headers: HeadersInit = {}
+      if (localAuthData) {
+        headers['x-auth-data'] = localAuthData
+      }
+      
+      const response = await fetch('/api/auth/facebook/status', { headers })
       const data = await response.json()
       setAuthStatus(data)
 
@@ -83,6 +93,18 @@ export default function FacebookAuthPanel() {
 
   const handleRefresh = async () => {
     setRefreshing(true)
+    
+    // LocalStorageのデータも再確認
+    const localAuthData = localStorage.getItem('facebook_auth')
+    if (localAuthData) {
+      try {
+        const authData = JSON.parse(localAuthData)
+        console.log('LocalStorage認証データ:', authData)
+      } catch (e) {
+        console.error('LocalStorage読み取りエラー:', e)
+      }
+    }
+    
     await checkAuthStatus()
     setRefreshing(false)
   }

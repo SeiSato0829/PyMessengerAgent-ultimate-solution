@@ -7,6 +7,34 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
+    // LocalStorageの認証データを確認（クライアント側で送信される）
+    const authHeader = request.headers.get('x-auth-data')
+    
+    if (authHeader) {
+      try {
+        const authData = JSON.parse(authHeader)
+        if (authData.authenticated && authData.expiresAt) {
+          const expiresAt = new Date(authData.expiresAt)
+          const isExpired = expiresAt < new Date()
+          
+          if (!isExpired) {
+            // 認証済み（LocalStorageから）
+            return NextResponse.json({
+              authenticated: true,
+              accountId: authData.userId,
+              accountName: authData.userName || 'Facebook User',
+              status: 'active',
+              expiresAt: authData.expiresAt,
+              message: 'Facebook認証済み（ローカルストレージ）',
+              source: 'localStorage'
+            })
+          }
+        }
+      } catch (e) {
+        console.error('認証データパースエラー:', e)
+      }
+    }
+    
     // 環境変数の詳細チェック
     const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
     const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
