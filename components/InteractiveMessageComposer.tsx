@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-// framer-motion removed for build compatibility
 import { 
   Send, 
   User, 

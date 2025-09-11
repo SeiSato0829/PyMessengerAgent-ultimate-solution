@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Terminal, 
   Activity, 
@@ -152,19 +151,19 @@ export default function RealtimeDebugPanel() {
 
   if (!isVisible) {
     return (
-      <motion.button
+      <button
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         onClick={() => setIsVisible(true)}
         className="fixed bottom-6 right-6 z-50 p-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all"
       >
         <Terminal className="h-5 w-5" />
-      </motion.button>
+      </button>
     )
   }
 
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
@@ -229,9 +228,9 @@ export default function RealtimeDebugPanel() {
         ref={logContainerRef}
         className="flex-1 overflow-y-auto p-3 space-y-2 h-64"
       >
-        <AnimatePresence>
+        <div>
           {filteredLogs.map((log, index) => (
-            <motion.div
+            <div
               key={log.id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -259,9 +258,9 @@ export default function RealtimeDebugPanel() {
                   </details>
                 )}
               </div>
-            </motion.div>
+            </div>
           ))}
-        </AnimatePresence>
+        </div>
         
         {filteredLogs.length === 0 && (
           <div className="text-center text-white/50 py-8">
@@ -296,6 +295,6 @@ export default function RealtimeDebugPanel() {
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { 
   LineChart, 
   Line, 
@@ -233,7 +232,7 @@ export default function AdvancedAnalyticsDashboard() {
             color: 'from-indigo-500 to-indigo-600' 
           }
         ].map((metric, index) => (
-          <motion.div
+          <div
             key={metric.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -253,14 +252,14 @@ export default function AdvancedAnalyticsDashboard() {
                 <metric.icon className="h-4 w-4 text-white" />
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Engagement Timeline */}
-        <motion.div
+        <div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="bg-white/10 backdrop-blur-xl rounded-xl p-6 border border-white/20"
@@ -294,10 +293,10 @@ export default function AdvancedAnalyticsDashboard() {
               />
             </AreaChart>
           </ResponsiveContainer>
-        </motion.div>
+        </div>
 
         {/* Device Distribution */}
-        <motion.div
+        <div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           className="bg-white/10 backdrop-blur-xl rounded-xl p-6 border border-white/20"
@@ -335,10 +334,10 @@ export default function AdvancedAnalyticsDashboard() {
               />
             </PieChart>
           </ResponsiveContainer>
-        </motion.div>
+        </div>
 
         {/* Demographics */}
-        <motion.div
+        <div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/10 backdrop-blur-xl rounded-xl p-6 border border-white/20"
@@ -360,10 +359,10 @@ export default function AdvancedAnalyticsDashboard() {
               <Bar dataKey="count" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </motion.div>
+        </div>
 
         {/* Conversion Funnel */}
-        <motion.div
+        <div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/10 backdrop-blur-xl rounded-xl p-6 border border-white/20"
@@ -377,7 +376,7 @@ export default function AdvancedAnalyticsDashboard() {
                   <span className="text-white/70 text-sm">{stage.percentage}%</span>
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-3">
-                  <motion.div
+                  <div
                     initial={{ width: 0 }}
                     animate={{ width: `${stage.percentage}%` }}
                     transition={{ delay: index * 0.2, duration: 0.8 }}
@@ -388,11 +387,11 @@ export default function AdvancedAnalyticsDashboard() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Content Performance Table */}
-      <motion.div
+      <div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 overflow-hidden"
@@ -461,7 +460,7 @@ export default function AdvancedAnalyticsDashboard() {
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
