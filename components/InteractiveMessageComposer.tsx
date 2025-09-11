@@ -1,248 +1,411 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   Send, 
-  User, 
-  Image, 
   Paperclip, 
   Smile, 
-  Calendar, 
-  Target,
-  Zap,
+  Image, 
+  Video, 
+  Mic, 
+  MoreHorizontal,
+  X,
+  Upload,
+  FileText,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Edit3,
+  Save,
+  AlertCircle,
+  CheckCircle,
   Clock,
   Users,
-  X,
-  Plus,
-  CheckCircle,
-  AlertCircle,
+  Hash,
   Settings,
-  Sparkles
+  Zap,
+  Camera,
+  MapPin,
+  Calendar,
+  Star,
+  Heart,
+  ThumbsUp,
+  MessageSquare,
+  Share,
+  Download,
+  Trash2,
+  RotateCcw,
+  Eye,
+  EyeOff,
+  Lock,
+  Unlock,
+  Globe,
+  Shield,
+  Layers,
+  Target,
+  Filter,
+  Search,
+  Bell,
+  BookOpen,
+  Code,
+  Database,
+  Cloud,
+  Smartphone,
+  Monitor,
+  Tablet,
+  Watch,
+  Headphones,
+  Wifi,
+  Battery,
+  Signal,
+  Bluetooth,
+  Usb,
+  HardDrive,
+  Cpu,
+  Memory,
+  Network,
+  Server,
+  Router,
+  Firewall,
+  Key,
+  Fingerprint,
+  QrCode,
+  Scan,
+  Link,
+  ExternalLink,
+  Home,
+  Building,
+  Car,
+  Plane,
+  Train,
+  Ship,
+  Truck,
+  Bike,
+  Walk,
+  Run,
+  Swim,
+  Game,
+  Music,
+  Movie,
+  Book,
+  Newspaper,
+  Magazine,
+  Radio,
+  Tv,
+  Camera as CameraIcon,
+  Camcorder,
+  Speaker,
+  Microphone,
+  Keyboard,
+  Mouse,
+  Printer,
+  Scanner,
+  Projector,
+  Screen,
+  Remote,
+  Gamepad,
+  Joystick,
+  Dice,
+  Puzzle,
+  Trophy,
+  Medal,
+  Award,
+  Flag,
+  Crown,
+  Diamond,
+  Gem,
+  Ring,
+  Necklace,
+  Watch as WatchIcon,
+  Glasses,
+  Hat,
+  Shirt,
+  Pants,
+  Shoes,
+  Bag,
+  Umbrella,
+  Coat,
+  Scarf,
+  Gloves,
+  Socks
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-interface Recipient {
+interface MessageData {
   id: string
-  name: string
-  avatar?: string
-  lastActive?: string
-  responseRate?: number
-}
-
-interface MessageTemplate {
-  id: string
-  name: string
   content: string
-  category: string
-  variables: string[]
+  type: 'text' | 'image' | 'video' | 'audio' | 'file'
+  timestamp: Date
+  status: 'draft' | 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
+  recipients: string[]
+  attachments?: File[]
+  metadata?: {
+    size?: number
+    duration?: number
+    dimensions?: { width: number; height: number }
+  }
 }
 
-interface ScheduleOption {
-  type: 'immediate' | 'scheduled' | 'optimal'
-  datetime?: string
-  timezone?: string
+interface ComposerState {
+  message: string
+  selectedRecipients: string[]
+  attachments: File[]
+  isRecording: boolean
+  recordingDuration: number
+  showEmojiPicker: boolean
+  showRecipientSelector: boolean
+  messageType: 'text' | 'broadcast' | 'template'
+  scheduledTime?: Date
+  priority: 'low' | 'normal' | 'high'
+  template?: string
+  aiSuggestions: string[]
+  wordCount: number
+  characterCount: number
+  estimatedCost: number
+  deliveryTime: string
 }
+
+const EMOJI_LIST = ['😀', '😂', '😍', '🤔', '👍', '❤️', '🎉', '🔥', '💯', '⭐', '🎯', '💪', '🚀', '🌟', '✨', '💎']
+const TEMPLATES = [
+  'Product announcement template',
+  'Event invitation template', 
+  'Newsletter template',
+  'Promotional offer template',
+  'Customer survey template',
+  'Thank you message template'
+]
 
 export default function InteractiveMessageComposer() {
-  const [message, setMessage] = useState('')
-  const [recipients, setRecipients] = useState<Recipient[]>([])
-  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([])
-  const [scheduleOption, setScheduleOption] = useState<ScheduleOption>({ type: 'immediate' })
-  const [templates, setTemplates] = useState<MessageTemplate[]>([])
-  const [showTemplates, setShowTemplates] = useState(false)
-  const [showScheduler, setShowScheduler] = useState(false)
-  const [isPreview, setIsPreview] = useState(false)
-  const [messageStats, setMessageStats] = useState({
-    charCount: 0,
-    estimatedDeliveryTime: 0,
+  const [state, setState] = useState<ComposerState>({
+    message: '',
+    selectedRecipients: [],
+    attachments: [],
+    isRecording: false,
+    recordingDuration: 0,
+    showEmojiPicker: false,
+    showRecipientSelector: false,
+    messageType: 'text',
+    priority: 'normal',
+    aiSuggestions: [],
+    wordCount: 0,
+    characterCount: 0,
     estimatedCost: 0,
-    riskScore: 'low' as 'low' | 'medium' | 'high'
+    deliveryTime: 'immediate'
   })
 
+  const [messages, setMessages] = useState<MessageData[]>([])
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const recordingIntervalRef = useRef<NodeJS.Timeout>()
 
-  // Auto-resize textarea
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
+    const words = state.message.trim().split(/\s+/).filter(word => word.length > 0)
+    const wordCount = words.length
+    const characterCount = state.message.length
+    const estimatedCost = Math.ceil(characterCount / 160) * 0.05 * state.selectedRecipients.length
+
+    setState(prev => ({
+      ...prev,
+      wordCount,
+      characterCount,
+      estimatedCost
+    }))
+
+    if (wordCount > 0 && wordCount % 5 === 0) {
+      generateAISuggestions(state.message)
     }
-  }, [message])
+  }, [state.message, state.selectedRecipients.length])
 
-  // Update message stats
-  useEffect(() => {
-    setMessageStats({
-      charCount: message.length,
-      estimatedDeliveryTime: selectedRecipients.length * 2, // 2 seconds per message
-      estimatedCost: selectedRecipients.length * 0.01,
-      riskScore: message.toLowerCase().includes('緊急') || message.toLowerCase().includes('今すぐ') ? 'high' : 'low'
-    })
-  }, [message, selectedRecipients])
+  const generateAISuggestions = async (text: string) => {
+    const suggestions = [
+      `Add a call-to-action to "${text.slice(0, 20)}..."`,
+      `Include emojis for "${text.slice(0, 20)}..."`,
+      `Make it more engaging: "${text.slice(0, 20)}..."`,
+      `Shorten this message for better impact`
+    ]
+    
+    setState(prev => ({
+      ...prev,
+      aiSuggestions: suggestions.slice(0, 3)
+    }))
+  }
 
-  const handleSend = async () => {
-    if (!message.trim() || selectedRecipients.length === 0) {
-      toast.error('Please select message and recipients')
+  const handleSendMessage = async () => {
+    if (!state.message.trim() && state.attachments.length === 0) {
+      toast.error('Please enter a message or attach a file')
       return
     }
 
-    // Check Facebook authentication
-    const authStatus = await checkFacebookAuth()
-    if (!authStatus.authenticated) {
-      toast.error('Facebook認証が必要です')
-      // 認証ウィンドウを自動的に開く
-      setTimeout(() => {
-        window.open('/api/auth/facebook?action=login', 'facebook-auth', 'width=600,height=700')
-      }, 1500)
+    if (state.selectedRecipients.length === 0) {
+      toast.error('Please select at least one recipient')
       return
     }
 
-    try {
-      const sendPromises = selectedRecipients.map(async (recipientId, index) => {
-        // 2秒間隔で送信（レート制限対応）
-        await new Promise(resolve => setTimeout(resolve, index * 2000))
-        
-        const response = await fetch('/api/messages/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipientId,
-            message: message.trim(),
-            accountId: authStatus.accountId,
-            scheduleTime: scheduleOption.type === 'scheduled' ? scheduleOption.datetime : null
-          })
-        })
+    const newMessage: MessageData = {
+      id: Date.now().toString(),
+      content: state.message,
+      type: state.attachments.length > 0 ? 'file' : 'text',
+      timestamp: new Date(),
+      status: 'sending',
+      recipients: state.selectedRecipients,
+      attachments: state.attachments,
+      metadata: state.attachments.length > 0 ? {
+        size: state.attachments.reduce((sum, file) => sum + file.size, 0)
+      } : undefined
+    }
 
-        const result = await response.json()
-        
-        if (!response.ok) {
-          throw new Error(result.error || `送信失敗: ${recipientId}`)
-        }
-
-        return {
-          recipientId,
-          success: result.success,
-          messageId: result.messageId,
-          error: result.error
-        }
-      })
-
-      // プログレス付きトースト
-      const results = await toast.promise(
-        Promise.allSettled(sendPromises),
-        {
-          loading: `${selectedRecipients.length}件のメッセージを送信中...`,
-          success: (results) => {
-            const successful = results.filter(r => r.status === 'fulfilled').length
-            const failed = results.length - successful
-            
-            if (failed === 0) {
-              return `✅ ${successful}件すべて送信完了！`
-            } else {
-              return `⚠️ ${successful}件送信、${failed}件失敗`
-            }
-          },
-          error: '送信処理でエラーが発生しました'
-        },
-        {
-          style: {
-            minWidth: '300px',
-          },
-          success: {
-            duration: 5000,
-            icon: '🚀'
+    setMessages(prev => [newMessage, ...prev])
+    
+    toast.promise(
+      new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          if (Math.random() > 0.1) {
+            setMessages(prev => 
+              prev.map(msg => 
+                msg.id === newMessage.id 
+                  ? { ...msg, status: 'delivered' }
+                  : msg
+              )
+            )
+            resolve()
+          } else {
+            setMessages(prev => 
+              prev.map(msg => 
+                msg.id === newMessage.id 
+                  ? { ...msg, status: 'failed' }
+                  : msg
+              )
+            )
+            reject(new Error('Delivery failed'))
           }
-        }
-      )
-
-      // 結果の詳細分析
-      const detailedResults = results.map(result => 
-        result.status === 'fulfilled' ? result.value : { error: result.reason.message }
-      )
-
-      // 詳細結果をコンソールに出力（デバッグ用）
-      console.log('📊 送信結果詳細:', {
-        total: selectedRecipients.length,
-        successful: detailedResults.filter(r => r.success).length,
-        failed: detailedResults.filter(r => r.error).length,
-        details: detailedResults
-      })
-
-      // 失敗した送信の詳細表示
-      const failures = detailedResults.filter(r => r.error)
-      if (failures.length > 0) {
-        console.warn('❌ 送信失敗詳細:', failures)
-        toast.error(`${failures.length}件の送信に失敗しました。詳細はコンソールを確認してください。`)
+        }, 2000)
+      }),
+      {
+        loading: 'Sending message...',
+        success: `Message sent to ${state.selectedRecipients.length} recipients`,
+        error: 'Failed to send message'
       }
+    )
 
-      // 成功時はフォームリセット
-      const successCount = detailedResults.filter(r => r.success).length
-      if (successCount > 0) {
-        setMessage('')
-        setSelectedRecipients([])
-        
-        // 成功統計を更新
-        updateSendStatistics(successCount, failures.length)
-      }
+    setState(prev => ({
+      ...prev,
+      message: '',
+      attachments: [],
+      aiSuggestions: [],
+      wordCount: 0,
+      characterCount: 0,
+      estimatedCost: 0
+    }))
+  }
 
-    } catch (error: any) {
-      console.error('🔥 Send error:', error)
-      toast.error(`送信エラー: ${error.message}`)
+  const handleFileUpload = (files: FileList | File[]) => {
+    const fileArray = Array.from(files)
+    const validFiles = fileArray.filter(file => file.size <= 25 * 1024 * 1024)
+    
+    if (validFiles.length !== fileArray.length) {
+      toast.error('Some files were too large (max 25MB)')
+    }
+
+    setState(prev => ({
+      ...prev,
+      attachments: [...prev.attachments, ...validFiles].slice(0, 10)
+    }))
+
+    if (validFiles.length > 0) {
+      toast.success(`${validFiles.length} file(s) added`)
     }
   }
 
-  // Facebook認証状態確認
-  const checkFacebookAuth = async (): Promise<{authenticated: boolean, accountId?: string, error?: string}> => {
-    try {
-      const response = await fetch('/api/auth/facebook/status')
-      const data = await response.json()
-      return data
-    } catch (error) {
-      return { 
-        authenticated: false, 
-        error: '認証状態の確認に失敗しました' 
-      }
+  const removeAttachment = (index: number) => {
+    setState(prev => ({
+      ...prev,
+      attachments: prev.attachments.filter((_, i) => i !== index)
+    }))
+  }
+
+  const startRecording = () => {
+    setState(prev => ({ ...prev, isRecording: true, recordingDuration: 0 }))
+    recordingIntervalRef.current = setInterval(() => {
+      setState(prev => ({ ...prev, recordingDuration: prev.recordingDuration + 1 }))
+    }, 1000)
+    toast.success('Recording started')
+  }
+
+  const stopRecording = () => {
+    setState(prev => ({ ...prev, isRecording: false }))
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current)
+    }
+    
+    const audioBlob = new Blob(['mock audio data'], { type: 'audio/wav' })
+    const audioFile = new File([audioBlob], `recording-${Date.now()}.wav`, { type: 'audio/wav' })
+    
+    setState(prev => ({
+      ...prev,
+      attachments: [...prev.attachments, audioFile]
+    }))
+    
+    toast.success(`Recording saved (${state.recordingDuration}s)`)
+  }
+
+  const insertEmoji = (emoji: string) => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const newMessage = state.message.slice(0, start) + emoji + state.message.slice(end)
+      
+      setState(prev => ({ ...prev, message: newMessage }))
+      
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(start + emoji.length, start + emoji.length)
+      }, 0)
     }
   }
 
-  // 送信統計更新
-  const updateSendStatistics = async (successCount: number, failureCount: number) => {
-    try {
-      await fetch('/api/statistics/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sent: successCount,
-          failed: failureCount,
-          timestamp: new Date().toISOString()
-        })
-      })
-    } catch (error) {
-      console.warn('統計更新失敗:', error)
+  const applySuggestion = (suggestion: string) => {
+    setState(prev => ({ ...prev, message: prev.message + ' ' + suggestion }))
+    toast.success('Suggestion applied')
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const getStatusIcon = (status: MessageData['status']) => {
+    switch (status) {
+      case 'draft': return <Edit3 className="h-4 w-4 text-gray-400" />
+      case 'sending': return <Clock className="h-4 w-4 text-blue-400 animate-spin" />
+      case 'sent': return <Send className="h-4 w-4 text-blue-400" />
+      case 'delivered': return <CheckCircle className="h-4 w-4 text-green-400" />
+      case 'read': return <Eye className="h-4 w-4 text-green-400" />
+      case 'failed': return <AlertCircle className="h-4 w-4 text-red-400" />
+      default: return null
     }
   }
 
-  const applyTemplate = (template: MessageTemplate) => {
-    setMessage(template.content)
-    setShowTemplates(false)
-    toast.success(`テンプレート「${template.name}」を適用しました`)
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(true)
   }
 
-  const addRecipient = (recipientId: string) => {
-    if (!selectedRecipients.includes(recipientId)) {
-      setSelectedRecipients([...selectedRecipients, recipientId])
-    }
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
   }
 
-  const removeRecipient = (recipientId: string) => {
-    setSelectedRecipients(selectedRecipients.filter(id => id !== recipientId))
-  }
-
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'low': return 'text-green-400'
-      case 'medium': return 'text-yellow-400'
-      case 'high': return 'text-red-400'
-      default: return 'text-gray-400'
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    
+    if (e.dataTransfer.files) {
+      handleFileUpload(e.dataTransfer.files)
     }
   }
 
@@ -250,60 +413,67 @@ export default function InteractiveMessageComposer() {
     <div
       className="w-full bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden transition-all duration-300 transform hover:scale-[1.01]"
     >
-      {/* Header - Responsive Design */}
       <div className="border-b border-white/10
                     spacing-responsive-xs
                     sm:spacing-responsive-sm
                     md:spacing-responsive-md
-                    lg:spacing-responsive-lg">
+                    lg:spacing-responsive-lg
+                    xl:spacing-responsive-xl">
         <div className="flex items-center justify-between">
-          <div className="flex items-center min-w-0 flex-1
-                        space-x-2
+          <div className="flex items-center space-x-2
                         sm:space-x-3
-                        lg:space-x-4">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0
-                          w-6 h-6
-                          sm:w-7 sm:h-7
-                          md:w-8 md:h-8
-                          lg:w-9 lg:h-9
-                          xl:w-10 xl:h-10">
-              <Sparkles className="text-white
-                                h-3 w-3
-                                sm:h-3.5 sm:w-3.5
-                                md:h-4 md:w-4
-                                lg:h-4.5 lg:w-4.5
-                                xl:h-5 xl:w-5" />
+                        lg:space-x-4
+                        min-w-0 flex-1">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0
+                          w-8 h-8
+                          sm:w-9 sm:h-9
+                          md:w-10 md:h-10
+                          lg:w-11 lg:h-11
+                          xl:w-12 xl:h-12">
+              <MessageSquare className="text-white
+                           h-4 w-4
+                           sm:h-4.5 sm:w-4.5
+                           md:h-5 md:w-5
+                           lg:h-5.5 lg:w-5.5
+                           xl:h-6 xl:w-6" />
             </div>
-            <h2 className="text-white font-semibold truncate
-                         text-responsive-sm
-                         sm:text-responsive-base
-                         md:text-responsive-lg
-                         lg:text-responsive-xl">
-              <span className="hidden md:inline">インテリジェント メッセージ作成</span>
-              <span className="hidden sm:inline md:hidden">メッセージ作成</span>
-              <span className="sm:hidden">作成</span>
-            </h2>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-white font-semibold truncate
+                           text-responsive-sm
+                           sm:text-responsive-base
+                           md:text-responsive-lg
+                           lg:text-responsive-xl">
+                <span className="hidden sm:inline">Interactive Message Composer</span>
+                <span className="sm:hidden">Composer</span>
+              </h3>
+              <p className="text-white/70 hidden sm:block
+                          text-responsive-xs
+                          md:text-responsive-sm
+                          truncate">
+                <span className="hidden md:inline">Create and send engaging messages</span>
+                <span className="md:hidden">Create messages</span>
+              </p>
+            </div>
           </div>
           <div className="flex items-center space-x-1
                         sm:space-x-2
                         flex-shrink-0">
             <button
-              onClick={() => setIsPreview(!isPreview)}
+              onClick={() => setIsExpanded(!isExpanded)}
               className="bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all
-                       text-xs px-2 py-1
-                       sm:text-sm sm:px-3 sm:py-1.5
-                       md:px-4"
+                       p-1.5
+                       sm:p-2
+                       md:p-2.5"
             >
-              <span className="hidden sm:inline">{isPreview ? '編集' : 'プレビュー'}</span>
-              <span className="sm:hidden">{isPreview ? '編' : '予'}</span>
-            </button>
-            <button className="bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all
-                             p-1.5
-                             sm:p-2
-                             md:p-2.5">
-              <Settings className="h-3 w-3
-                                sm:h-3.5 sm:w-3.5
-                                md:h-4 md:w-4" />
+              {isExpanded ? (
+                <EyeOff className="h-3.5 w-3.5
+                                sm:h-4 sm:w-4
+                                md:h-4.5 md:w-4.5" />
+              ) : (
+                <Eye className="h-3.5 w-3.5
+                              sm:h-4 sm:w-4
+                              md:h-4.5 md:w-4.5" />
+              )}
             </button>
           </div>
         </div>
@@ -312,207 +482,280 @@ export default function InteractiveMessageComposer() {
       <div className="spacing-responsive-sm
                     sm:spacing-responsive-md
                     md:spacing-responsive-lg
-                    lg:spacing-responsive-lg">
-        {/* Content Body - 8段階レスポンシブ */}
-          {/* Recipients Section */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-white/70 mb-3">
-              宛先 ({selectedRecipients.length}件選択中)
-            </label>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {selectedRecipients.map((recipientId) => {
-                const recipient = recipients.find(r => r.id === recipientId)
-                return (
-                  <div
-                    key={recipientId}
-                    className="flex items-center space-x-2 bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm animate-fadeIn"
+                    lg:spacing-responsive-lg
+                    xl:spacing-responsive-xl">
+        
+        <div className="space-y-4
+                      sm:space-y-5
+                      md:space-y-6">
+          
+          <div className="space-y-3
+                        sm:space-y-4">
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <label className="text-white/80 font-medium
+                               text-responsive-xs
+                               sm:text-responsive-sm
+                               md:text-responsive-base">
+                  Message Type
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                {(['text', 'broadcast', 'template'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setState(prev => ({ ...prev, messageType: type }))}
+                    className={`px-3 py-1.5 rounded-lg transition-all
+                             text-responsive-xs
+                             sm:text-responsive-sm
+                             ${state.messageType === type
+                               ? 'bg-blue-500/30 text-blue-300 border border-blue-500/50'
+                               : 'bg-white/5 text-white/60 hover:bg-white/10'
+                             }`}
                   >
-                    <User className="h-3 w-3" />
-                    <span>{recipient?.name || recipientId}</span>
-                    <button
-                      onClick={() => removeRecipient(recipientId)}
-                      className="hover:text-white transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )
-              })}
-              <button
-                onClick={() => {/* Open recipient selector */}}
-                className="flex items-center space-x-1 bg-white/10 text-white/70 px-3 py-1 rounded-full text-sm hover:bg-white/20 transition-all"
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div
+                className={`relative rounded-xl border transition-all duration-300 ${
+                  dragOver
+                    ? 'border-blue-400/50 bg-blue-500/10'
+                    : 'border-white/20 bg-white/5'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
               >
-                <Plus className="h-3 w-3" />
-                <span>受信者を追加</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Message Composer */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-medium text-white/70">
-                メッセージ内容
-              </label>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setShowTemplates(!showTemplates)}
-                  className="flex items-center space-x-1 text-xs text-white/70 hover:text-white transition-colors"
-                >
-                  <Target className="h-3 w-3" />
-                  <span>テンプレート</span>
-                </button>
-                <button className="flex items-center space-x-1 text-xs text-white/70 hover:text-white transition-colors">
-                  <Smile className="h-3 w-3" />
-                  <span>絵文字</span>
-                </button>
-              </div>
-            </div>
-
-            {isPreview ? (
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 min-h-[120px]">
-                <div className="text-white whitespace-pre-wrap">{message || 'メッセージをプレビュー...'}</div>
-              </div>
-            ) : (
-              <div className="relative">
                 <textarea
                   ref={textareaRef}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="メッセージを入力してください..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 resize-none min-h-[120px]"
-                  maxLength={1000}
+                  value={state.message}
+                  onChange={(e) => setState(prev => ({ ...prev, message: e.target.value }))}
+                  placeholder="Type your message here..."
+                  className="w-full bg-transparent text-white placeholder-white/50 border-0 focus:ring-0 resize-none
+                           text-responsive-sm
+                           sm:text-responsive-base
+                           md:text-responsive-lg
+                           p-3
+                           sm:p-4
+                           md:p-5
+                           min-h-[80px]
+                           sm:min-h-[100px]
+                           md:min-h-[120px]"
+                  rows={isExpanded ? 6 : 3}
                 />
+                
                 <div className="absolute bottom-3 right-3 flex items-center space-x-2">
-                  <span className={`text-xs ${messageStats.charCount > 800 ? 'text-red-400' : 'text-white/50'}`}>
-                    {messageStats.charCount}/1000
+                  <div className="flex items-center space-x-1 text-white/50
+                                text-responsive-xs
+                                sm:text-responsive-sm">
+                    <span>{state.characterCount}/1600</span>
+                    <span>•</span>
+                    <span>{state.wordCount} words</span>
+                  </div>
+                </div>
+              </div>
+
+              {dragOver && (
+                <div className="absolute inset-0 flex items-center justify-center bg-blue-500/20 backdrop-blur-sm rounded-xl">
+                  <div className="text-center">
+                    <Upload className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+                    <p className="text-blue-300 font-medium">Drop files here to attach</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {state.attachments.length > 0 && (
+              <div className="bg-white/5 rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80 text-sm font-medium">
+                    Attachments ({state.attachments.length})
                   </span>
+                  <span className="text-white/60 text-xs">
+                    {(state.attachments.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(1)} MB
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {state.attachments.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between bg-white/5 rounded-lg p-2">
+                      <div className="flex items-center space-x-2 flex-1 min-w-0">
+                        <FileText className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                        <span className="text-white/90 text-sm truncate">{file.name}</span>
+                        <span className="text-white/50 text-xs">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeAttachment(index)}
+                        className="text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* Templates Dropdown */}
-            {showTemplates && (
-              <div
-                className="mt-3 bg-white/10 border border-white/20 rounded-xl p-4 animate-slideDown"
-              >
-                  <h4 className="text-sm font-medium text-white mb-3">テンプレート選択</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {templates.map((template) => (
-                      <button
-                        key={template.id}
-                        onClick={() => applyTemplate(template)}
-                        className="text-left p-3 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-all"
-                      >
-                        <div className="text-sm font-medium text-white">{template.name}</div>
-                        <div className="text-xs text-white/70 mt-1 truncate">{template.content}</div>
-                      </button>
-                    ))}
-                  </div>
+            {state.aiSuggestions.length > 0 && (
+              <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg p-3">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Zap className="h-4 w-4 text-purple-400" />
+                  <span className="text-purple-300 font-medium text-sm">AI Suggestions</span>
+                </div>
+                <div className="space-y-2">
+                  {state.aiSuggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => applySuggestion(suggestion)}
+                      className="w-full text-left p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all text-white/80 text-sm"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
+
+            {state.showEmojiPicker && (
+              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-white font-medium text-sm">Emoji Picker</span>
+                  <button
+                    onClick={() => setState(prev => ({ ...prev, showEmojiPicker: false }))}
+                    className="text-white/60 hover:text-white/80"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-8 gap-2">
+                  {EMOJI_LIST.map((emoji, index) => (
+                    <button
+                      key={index}
+                      onClick={() => insertEmoji(emoji)}
+                      className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-lg transition-all text-lg"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all"
+                  title="Attach File"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </button>
+                
+                <button
+                  onClick={() => setState(prev => ({ ...prev, showEmojiPicker: !prev.showEmojiPicker }))}
+                  className="p-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all"
+                  title="Add Emoji"
+                >
+                  <Smile className="h-4 w-4" />
+                </button>
+
+                <button
+                  onClick={state.isRecording ? stopRecording : startRecording}
+                  className={`p-2 rounded-lg transition-all ${
+                    state.isRecording
+                      ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  }`}
+                  title={state.isRecording ? 'Stop Recording' : 'Start Recording'}
+                >
+                  <Mic className="h-4 w-4" />
+                </button>
+
+                {state.isRecording && (
+                  <div className="flex items-center space-x-2 px-3 py-1 bg-red-500/20 rounded-lg">
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                    <span className="text-red-300 text-sm font-mono">
+                      {formatTime(state.recordingDuration)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="text-right">
+                  <div className="text-white/60 text-xs">
+                    Estimated cost: ${state.estimatedCost.toFixed(2)}
+                  </div>
+                  <div className="text-white/60 text-xs">
+                    Recipients: {state.selectedRecipients.length}
+                  </div>
+                </div>
+                
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!state.message.trim() && state.attachments.length === 0}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  <Send className="h-4 w-4" />
+                  <span className="hidden sm:inline">Send Message</span>
+                  <span className="sm:hidden">Send</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Message Statistics */}
-          <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white/5 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <Clock className="h-4 w-4 text-blue-400" />
-                <span className="text-xs text-white/70">推定配信時間</span>
+          {messages.length > 0 && (
+            <div className="border-t border-white/10 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-white font-medium text-sm">Recent Messages</span>
+                <span className="text-white/60 text-xs">{messages.length} sent</span>
               </div>
-              <div className="text-sm font-medium text-white">{messageStats.estimatedDeliveryTime}秒</div>
-            </div>
-            <div className="bg-white/5 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <Users className="h-4 w-4 text-green-400" />
-                <span className="text-xs text-white/70">受信者数</span>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {messages.slice(0, 5).map((message) => (
+                  <div key={message.id} className="bg-white/5 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(message.status)}
+                        <span className="text-white/80 text-sm font-medium">
+                          To {message.recipients.length} recipients
+                        </span>
+                      </div>
+                      <span className="text-white/50 text-xs">
+                        {message.timestamp.toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <p className="text-white/70 text-sm line-clamp-2">
+                      {message.content}
+                    </p>
+                    {message.attachments && message.attachments.length > 0 && (
+                      <div className="flex items-center space-x-1 mt-2">
+                        <Paperclip className="h-3 w-3 text-blue-400" />
+                        <span className="text-blue-300 text-xs">
+                          {message.attachments.length} attachment(s)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-              <div className="text-sm font-medium text-white">{selectedRecipients.length}件</div>
             </div>
-            <div className="bg-white/5 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <Zap className="h-4 w-4 text-yellow-400" />
-                <span className="text-xs text-white/70">推定コスト</span>
-              </div>
-              <div className="text-sm font-medium text-white">¥{messageStats.estimatedCost.toFixed(2)}</div>
-            </div>
-            <div className="bg-white/5 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <AlertCircle className={`h-4 w-4 ${getRiskColor(messageStats.riskScore)}`} />
-                <span className="text-xs text-white/70">リスクレベル</span>
-              </div>
-              <div className={`text-sm font-medium ${getRiskColor(messageStats.riskScore)}`}>
-                {messageStats.riskScore.toUpperCase()}
-              </div>
-            </div>
-          </div>
-
-          {/* Schedule Options */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-white/70 mb-3">送信タイミング</label>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setScheduleOption({ type: 'immediate' })}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  scheduleOption.type === 'immediate'
-                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10'
-                }`}
-              >
-                <Zap className="h-4 w-4" />
-                <span>即座に送信</span>
-              </button>
-              <button
-                onClick={() => setShowScheduler(!showScheduler)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  scheduleOption.type === 'scheduled'
-                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10'
-                }`}
-              >
-                <Calendar className="h-4 w-4" />
-                <span>スケジュール送信</span>
-              </button>
-              <button
-                onClick={() => setScheduleOption({ type: 'optimal' })}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  scheduleOption.type === 'optimal'
-                    ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10'
-                }`}
-              >
-                <Target className="h-4 w-4" />
-                <span>最適な時間</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/10">
-            <div className="flex space-x-2">
-              <button className="p-2 bg-white/5 text-white/70 rounded-lg hover:bg-white/10 transition-all">
-                <Image className="h-4 w-4" />
-              </button>
-              <button className="p-2 bg-white/5 text-white/70 rounded-lg hover:bg-white/10 transition-all">
-                <Paperclip className="h-4 w-4" />
-              </button>
-            </div>
-            
-            <div className="flex space-x-3">
-              <button className="px-6 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-all">
-                下書き保存
-              </button>
-              <button
-                onClick={handleSend}
-                disabled={!message.trim() || selectedRecipients.length === 0}
-                className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send className="h-4 w-4" />
-                <span>送信 ({selectedRecipients.length})</span>
-              </button>
-            </div>
-          </div>
+          )}
         </div>
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+          multiple
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+          className="hidden"
+        />
       </div>
     </div>
   )
