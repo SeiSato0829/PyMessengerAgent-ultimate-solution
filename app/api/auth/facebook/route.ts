@@ -21,19 +21,13 @@ export async function GET(request: NextRequest) {
     const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.onrender.com'
     const FACEBOOK_REDIRECT_URI = `${APP_URL}/api/auth/facebook/callback`
 
-    // デモモード判定（環境変数が一つでも不足していればデモモード）
+    // デモモード判定（修正版 - 実際の値を許可）
     const isDemoMode = !FACEBOOK_APP_ID || 
                        !FACEBOOK_APP_SECRET ||
                        FACEBOOK_APP_ID === 'your-facebook-app-id' ||
                        FACEBOOK_APP_SECRET === 'your-facebook-app-secret' ||
-                       FACEBOOK_APP_ID === 'demo-app-id' ||
-                       FACEBOOK_APP_SECRET === 'demo-app-secret' ||
-                       FACEBOOK_APP_ID.length < 15 || // 有効なFacebook App IDは15文字以上
-                       FACEBOOK_APP_SECRET.length < 20 || // 有効なSecretは32文字以上だが、余裕を持って20文字
-                       FACEBOOK_APP_ID.includes('temp') || // 一時的な値
-                       FACEBOOK_APP_ID.includes('test') || // テスト値
-                       FACEBOOK_APP_SECRET.includes('temp') || // 一時的な値
-                       FACEBOOK_APP_SECRET.includes('test') || // テスト値
+                       FACEBOOK_APP_ID === 'temporary_app_id' || // .env.starter.templateの値
+                       FACEBOOK_APP_SECRET === 'temporary_app_secret' || // .env.starter.templateの値
                        process.env.FORCE_DEMO_MODE === 'true' // 強制デモモード
 
     // デバッグログ出力

@@ -5,6 +5,8 @@ console.log('='.repeat(60))
 console.log('Next.js Config - 環境変数状態:')
 console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ 設定済み' : '❌ 未設定')
 console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ 設定済み' : '❌ 未設定')
+console.log('FACEBOOK_APP_ID:', process.env.FACEBOOK_APP_ID ? '✅ 設定済み' : '❌ 未設定')
+console.log('FACEBOOK_APP_SECRET:', process.env.FACEBOOK_APP_SECRET ? '✅ 設定済み' : '❌ 未設定')
 console.log('='.repeat(60))
 
 const nextConfig = {

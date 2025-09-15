@@ -12,18 +12,15 @@ if (typeof window === 'undefined') {
   console.log('KEY:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 30)}...` : '❌ 未設定')
 }
 
-// Supabase設定の検証（より厳密なチェック）
+// Supabase設定の検証（修正版）
 const isDummyMode = !supabaseUrl || 
                     !supabaseAnonKey || 
                     supabaseUrl === 'https://your-project.supabase.co' ||
-                    supabaseUrl === 'https://demo-project-dummy.supabase.co' ||
-                    supabaseUrl === 'https://demo-dummy.supabase.co' ||
                     supabaseUrl.includes('xxxxx') ||
                     supabaseUrl.includes('your-project') ||
-                    supabaseUrl.includes('demo-') ||
                     supabaseAnonKey === 'your-anon-key' ||
                     supabaseAnonKey.includes('dummy') ||
-                    supabaseAnonKey.length < 100
+                    supabaseAnonKey.length < 50 // キー長チェックを緩和
 
 if (isDummyMode) {
   console.warn('⚠️ Supabase未設定：デモモードで動作中')

@@ -10,7 +10,9 @@ console.log('='.repeat(60))
 
 const required = [
   'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'FACEBOOK_APP_ID',
+  'FACEBOOK_APP_SECRET'
 ]
 
 const warnings = []
