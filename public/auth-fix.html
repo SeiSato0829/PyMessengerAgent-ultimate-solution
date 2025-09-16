@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Facebook認証設定ツール</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #4a5568;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        #status {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+        }
+        .success {
+            background: #c6f6d5 !important;
+            border-color: #48bb78 !important;
+            color: #22543d;
+        }
+        .error {
+            background: #fed7d7 !important;
+            border-color: #f56565 !important;
+            color: #742a2a;
+        }
+        pre {
+            background: #2d3748;
+            color: #48bb78;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Facebook認証設定ツール</h1>
+        
+        <div id="status">
+            <h3>現在の状態:</h3>
+            <p id="currentStatus">チェック中...</p>
+        </div>
+
+        <h2>📝 手順:</h2>
+        <ol>
+            <li>下のボタンをクリックして認証データを設定</li>
+            <li>自動的にページがリロードされます</li>
+            <li>認証済み状態になります</li>
+        </ol>
+
+        <button onclick="setAuth()">🚀 Facebook認証データを設定</button>
+        <button onclick="clearAuth()">🗑️ 認証データをクリア</button>
+        <button onclick="checkStatus()">🔍 状態を再チェック</button>
+
+        <h3>デバッグ情報:</h3>
+        <pre id="debug"></pre>
+    </div>
+
+    <script>
+        // Facebook認証データ
+        const authData = {
+            authenticated: true,
+            userId: "122097202893017783",
+            userName: "テスト 投稿",
+            accessToken: "EAAPRkbnNAsMBPeFYPeK0pKHuWtFSX3DgZBVD8CTsG7lil2KDQSFGMVevrjVIuWM2Vo61tRFCpcYMHCjKQcyZBNtIyHtpzyzMsf5qMknYvn14hh0DwCwvAVbaNCumecidqJ3jChbDQmTiDeo3Tu5m4LNzgAkNQZBeeKC4jDO4T6gej8HSm5T2cQjn6GUQFT069VWQG0ZBjAZCP1QZAhI5XOr7sSBPGvrPsw0TDtoqG9h08CvH43EWxG6zqcbGTMEbNvZAfenZCfLg6IEUHwZDZD",
+            expiresAt: "2025-09-16T03:00:00.000Z",
+            timestamp: new Date().toISOString(),
+            scopes: ["public_profile"]
+        };
+
+        function checkStatus() {
+            const stored = localStorage.getItem('facebook_auth');
+            const statusEl = document.getElementById('currentStatus');
+            const debugEl = document.getElementById('debug');
+            
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    statusEl.innerHTML = `
+                        <strong style="color: green">✅ 認証済み</strong><br>
+                        ユーザー名: ${data.userName}<br>
+                        ユーザーID: ${data.userId}<br>
+                        有効期限: ${new Date(data.expiresAt).toLocaleString()}
+                    `;
+                    statusEl.parentElement.className = 'success';
+                    debugEl.textContent = JSON.stringify(data, null, 2);
+                } catch (e) {
+                    statusEl.innerHTML = '<strong style="color: red">❌ 認証データが破損しています</strong>';
+                    statusEl.parentElement.className = 'error';
+                    debugEl.textContent = 'エラー: ' + e.message;
+                }
+            } else {
+                statusEl.innerHTML = '<strong style="color: orange">⚠️ 未認証</strong>';
+                debugEl.textContent = 'LocalStorageに認証データがありません';
+            }
+        }
+
+        function setAuth() {
+            try {
+                localStorage.setItem('facebook_auth', JSON.stringify(authData));
+                alert('✅ Facebook認証データを設定しました！\n3秒後にページをリロードします...');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+            } catch (e) {
+                alert('❌ エラーが発生しました: ' + e.message);
+            }
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('facebook_auth');
+            alert('🗑️ 認証データをクリアしました');
+            checkStatus();
+        }
+
+        // ページ読み込み時に状態チェック
+        window.onload = checkStatus;
+    </script>
+</body>
+</html>
