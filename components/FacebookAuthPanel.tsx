@@ -52,15 +52,34 @@ export default function FacebookAuthPanel() {
       // LocalStorageから認証データを取得
       const localAuthData = localStorage.getItem('facebook_auth')
       
-      // 認証データをBase64エンコードしてヘッダーに含める（HTTPヘッダーは ASCII only）
-      const headers: HeadersInit = {}
+      // LocalStorageに認証データがある場合は強制認証エンドポイントを使用
       if (localAuthData) {
-        // Base64エンコードして日本語文字を回避
-        const encodedData = btoa(encodeURIComponent(localAuthData))
-        headers['x-auth-data'] = encodedData
+        try {
+          const authData = JSON.parse(localAuthData)
+          if (authData.authenticated && authData.accessToken) {
+            // 強制認証エンドポイントを使用（デモモードをバイパス）
+            const forceAuthResponse = await fetch('/api/auth/facebook/force-auth', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(authData)
+            })
+            
+            if (forceAuthResponse.ok) {
+              const forceAuthData = await forceAuthResponse.json()
+              setAuthStatus(forceAuthData)
+              if (forceAuthData.authenticated) {
+                toast.success('✅ Facebook認証確認済み', { duration: 2000 })
+                return
+              }
+            }
+          }
+        } catch (e) {
+          console.error('LocalStorage認証データエラー:', e)
+        }
       }
       
-      const response = await fetch('/api/auth/facebook/status', { headers })
+      // LocalStorageがない場合は通常のstatusエンドポイントを使用
+      const response = await fetch('/api/auth/facebook/status')
       const data = await response.json()
       setAuthStatus(data)
 
