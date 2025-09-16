@@ -259,36 +259,97 @@ export default function InteractiveMessageComposer() {
 
     setMessages(prev => [newMessage, ...prev])
     
-    toast.promise(
-      new Promise<void>((resolve, reject) => {
-        setTimeout(() => {
-          if (Math.random() > 0.1) {
-            setMessages(prev => 
-              prev.map(msg => 
-                msg.id === newMessage.id 
-                  ? { ...msg, status: 'delivered' }
-                  : msg
-              )
+    // LocalStorageから認証情報を取得
+    const authDataStr = localStorage.getItem('facebookAuth')
+    if (!authDataStr) {
+      toast.error('認証が必要です。Facebook認証を完了してください。')
+      return
+    }
+
+    const authData = JSON.parse(authDataStr)
+    if (!authData.accessToken) {
+      toast.error('アクセストークンが見つかりません。再認証してください。')
+      return
+    }
+
+    // 実際のFacebook APIを呼び出す
+    let successCount = 0
+    let failCount = 0
+    
+    for (const recipientId of state.selectedRecipients) {
+      try {
+        console.log(`📤 送信開始: ${recipientId}`)
+        
+        const response = await fetch('/api/messages/send-direct', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            recipientId: recipientId,
+            message: state.message,
+            accessToken: authData.accessToken,
+            userId: authData.userId
+          })
+        })
+
+        const result = await response.json()
+        console.log('📥 API応答:', result)
+
+        if (response.ok && result.success) {
+          // 成功
+          successCount++
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === newMessage.id 
+                ? { ...msg, status: 'delivered' }
+                : msg
             )
-            resolve()
+          )
+          toast.success(`✅ メッセージ送信成功: ${recipientId}`)
+        } else {
+          // エラー処理
+          failCount++
+          console.error('❌ 送信エラー:', result)
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === newMessage.id 
+                ? { ...msg, status: 'failed' }
+                : msg
+            )
+          )
+          
+          // エラーメッセージを表示
+          if (result.requiresAppReview) {
+            toast.error(`⚠️ App Review承認が必要です: ${result.details.message}`)
+          } else if (result.details?.message) {
+            toast.error(`送信失敗: ${result.details.message}`)
           } else {
-            setMessages(prev => 
-              prev.map(msg => 
-                msg.id === newMessage.id 
-                  ? { ...msg, status: 'failed' }
-                  : msg
-              )
-            )
-            reject(new Error('Delivery failed'))
+            toast.error(`送信失敗: ${result.error || 'Unknown error'}`)
           }
-        }, 2000)
-      }),
-      {
-        loading: 'Sending message...',
-        success: `Message sent to ${state.selectedRecipients.length} recipients`,
-        error: 'Failed to send message'
+        }
+      } catch (error: any) {
+        failCount++
+        console.error('🔥 送信エラー:', error)
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === newMessage.id 
+              ? { ...msg, status: 'failed' }
+              : msg
+          )
+        )
+        toast.error(`送信エラー: ${error.message}`)
       }
-    )
+    }
+    
+    // 最終結果を表示
+    if (successCount > 0 && failCount === 0) {
+      toast.success(`✅ ${successCount}件のメッセージを送信しました`)
+    } else if (successCount > 0 && failCount > 0) {
+      toast.warning(`⚠️ ${successCount}件成功、${failCount}件失敗`)
+    } else {
+      toast.error(`❌ すべてのメッセージ送信に失敗しました`)
+    }
 
     setState(prev => ({
       ...prev,
