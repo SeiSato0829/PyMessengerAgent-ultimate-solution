@@ -492,20 +492,22 @@ export default function InteractiveMessageComposer() {
           <div className="space-y-3
                         sm:space-y-4">
             
-            {/* 受信者選択セクション */}
-            <div className="space-y-2">
-              <label className="text-white/80 font-medium flex items-center gap-2
-                             text-responsive-xs
-                             sm:text-responsive-sm
-                             md:text-responsive-base">
-                <Users className="h-4 w-4" />
-                受信者
+            {/* 受信者選択セクション - 強調表示 */}
+            <div className="space-y-2 border-2 border-yellow-400 bg-yellow-400/10 rounded-xl p-4 animate-pulse">
+              <label className="text-yellow-300 font-bold flex items-center gap-2 text-lg">
+                <Users className="h-5 w-5" />
+                ⚠️ 受信者を選択してください
               </label>
-              <div className="bg-white/5 rounded-lg p-3 space-y-2">
+              <div className="bg-black/30 rounded-lg p-3 space-y-2 border border-yellow-400/50">
+                <div className="bg-red-500/20 border border-red-400 rounded-lg p-2 mb-2">
+                  <p className="text-red-300 text-sm font-bold">
+                    🔴 重要: 受信者が設定されていません！下記から選択するか、入力してください。
+                  </p>
+                </div>
                 <input
                   type="text"
-                  placeholder="受信者のFacebook IDまたは名前を入力..."
-                  className="w-full bg-white/10 text-white placeholder-white/50 rounded-lg px-3 py-2 border border-white/20 focus:border-blue-400 focus:outline-none"
+                  placeholder="受信者のFacebook IDまたは名前を入力してEnterキー..."
+                  className="w-full bg-white/20 text-white placeholder-yellow-300 rounded-lg px-4 py-3 border-2 border-yellow-400 focus:border-green-400 focus:outline-none text-lg font-medium"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                       const newRecipient = e.currentTarget.value.trim()

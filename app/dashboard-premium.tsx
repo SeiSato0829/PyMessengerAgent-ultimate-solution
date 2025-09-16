@@ -401,6 +401,20 @@ export default function PremiumMessengerDashboard() {
         </div>
       </header>
 
+      {/* Interactive Message Composer - 最重要！メッセージ送信UI */}
+      <div className="container-responsive py-6">
+        <div className="bg-yellow-500/20 border-2 border-yellow-400 rounded-xl p-4 mb-4">
+          <h2 className="text-yellow-300 text-xl font-bold mb-2">⚠️ メッセージ送信コンポーネント</h2>
+          <p className="text-yellow-200">下記で受信者を選択してメッセージを送信できます</p>
+        </div>
+        <InteractiveMessageComposer />
+      </div>
+
+      {/* Facebook Auth Panel - 認証状態確認 */}
+      <div className="container-responsive py-4">
+        <FacebookAuthPanel />
+      </div>
+
       <div className="container-responsive spacing-responsive-lg">
         {/* Enhanced KPI Cards - 8段階レスポンシブグリッド */}
         <div className="responsive-grid mb-6
