@@ -179,7 +179,7 @@ const TEMPLATES = [
 export default function InteractiveMessageComposer() {
   const [state, setState] = useState<ComposerState>({
     message: '',
-    selectedRecipients: [],
+    selectedRecipients: ['test_user'], // デフォルトでテストユーザーを選択
     attachments: [],
     isRecording: false,
     recordingDuration: 0,
@@ -492,6 +492,89 @@ export default function InteractiveMessageComposer() {
           <div className="space-y-3
                         sm:space-y-4">
             
+            {/* 受信者選択セクション */}
+            <div className="space-y-2">
+              <label className="text-white/80 font-medium flex items-center gap-2
+                             text-responsive-xs
+                             sm:text-responsive-sm
+                             md:text-responsive-base">
+                <Users className="h-4 w-4" />
+                受信者
+              </label>
+              <div className="bg-white/5 rounded-lg p-3 space-y-2">
+                <input
+                  type="text"
+                  placeholder="受信者のFacebook IDまたは名前を入力..."
+                  className="w-full bg-white/10 text-white placeholder-white/50 rounded-lg px-3 py-2 border border-white/20 focus:border-blue-400 focus:outline-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      const newRecipient = e.currentTarget.value.trim()
+                      setState(prev => ({
+                        ...prev,
+                        selectedRecipients: [...prev.selectedRecipients, newRecipient]
+                      }))
+                      e.currentTarget.value = ''
+                      toast.success(`受信者 "${newRecipient}" を追加しました`)
+                    }
+                  }}
+                />
+                
+                {/* 選択済み受信者リスト */}
+                {state.selectedRecipients.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {state.selectedRecipients.map((recipient, index) => (
+                      <span
+                        key={index}
+                        className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                      >
+                        {recipient}
+                        <button
+                          onClick={() => {
+                            setState(prev => ({
+                              ...prev,
+                              selectedRecipients: prev.selectedRecipients.filter((_, i) => i !== index)
+                            }))
+                            toast.success(`受信者 "${recipient}" を削除しました`)
+                          }}
+                          className="hover:text-red-400 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                {/* クイック選択ボタン */}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => {
+                      setState(prev => ({
+                        ...prev,
+                        selectedRecipients: ['all_followers']
+                      }))
+                      toast.success('全フォロワーを選択しました')
+                    }}
+                    className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-lg text-sm hover:bg-purple-500/30 transition-all"
+                  >
+                    全フォロワー
+                  </button>
+                  <button
+                    onClick={() => {
+                      setState(prev => ({
+                        ...prev,
+                        selectedRecipients: ['test_group']
+                      }))
+                      toast.success('テストグループを選択しました')
+                    }}
+                    className="bg-green-500/20 text-green-300 px-3 py-1 rounded-lg text-sm hover:bg-green-500/30 transition-all"
+                  >
+                    テストグループ
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <label className="text-white/80 font-medium
