@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 
 export default function TestMessagePage() {
@@ -8,6 +8,24 @@ export default function TestMessagePage() {
   const [message, setMessage] = useState('テストメッセージ from PyMessenger')
   const [loading, setLoading] = useState(false)
   const [response, setResponse] = useState<any>(null)
+  const [authStatus, setAuthStatus] = useState<any>({ hasAuth: false })
+
+  useEffect(() => {
+    // クライアントサイドでのみ実行
+    if (typeof window !== 'undefined') {
+      const authDataStr = localStorage.getItem('facebookAuth')
+      if (authDataStr) {
+        const authData = JSON.parse(authDataStr)
+        setAuthStatus({
+          hasAuth: true,
+          userId: authData.userId,
+          userName: authData.userName,
+          hasToken: !!authData.accessToken,
+          expiresAt: authData.expiresAt
+        })
+      }
+    }
+  }, [])
 
   const handleSendMessage = async () => {
     // LocalStorageから認証情報を取得
@@ -67,23 +85,6 @@ export default function TestMessagePage() {
       setLoading(false)
     }
   }
-
-  const checkAuthStatus = () => {
-    const authDataStr = localStorage.getItem('facebookAuth')
-    if (authDataStr) {
-      const authData = JSON.parse(authDataStr)
-      return {
-        hasAuth: true,
-        userId: authData.userId,
-        userName: authData.userName,
-        hasToken: !!authData.accessToken,
-        expiresAt: authData.expiresAt
-      }
-    }
-    return { hasAuth: false }
-  }
-
-  const authStatus = checkAuthStatus()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 p-8">
