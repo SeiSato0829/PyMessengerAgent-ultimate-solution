@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
           const isExpired = expiresAt < new Date()
           
           if (!isExpired) {
-            // 認証済み（LocalStorageから）
+            // 認証済み（LocalStorageから）- デモモードチェックをスキップ
             return NextResponse.json({
               authenticated: true,
               accountId: authData.userId,
@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
               status: 'active',
               expiresAt: authData.expiresAt,
               message: 'Facebook認証済み（ローカルストレージ）',
-              source: 'localStorage'
+              source: 'localStorage',
+              isDemoMode: false // LocalStorage認証がある場合はデモモードではない
             })
           }
         }
@@ -42,19 +43,13 @@ export async function GET(request: NextRequest) {
     const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
     const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
     
-    // デモモードチェック（環境変数が設定されていない場合）
+    // デモモードチェック（環境変数が正しく設定されていない場合）
     const isDemoMode = !FACEBOOK_APP_ID || 
                        !FACEBOOK_APP_SECRET ||
                        FACEBOOK_APP_ID === 'your-facebook-app-id' ||
                        FACEBOOK_APP_SECRET === 'your-facebook-app-secret' ||
-                       FACEBOOK_APP_ID === 'demo-app-id' ||
-                       FACEBOOK_APP_SECRET === 'demo-app-secret' ||
-                       FACEBOOK_APP_ID.length < 15 || // 有効なFacebook App IDは15文字以上
-                       FACEBOOK_APP_SECRET.length < 20 || // 有効なSecretは32文字以上だが、余裕を持って20文字
-                       FACEBOOK_APP_ID.includes('temp') || // 一時的な値
-                       FACEBOOK_APP_ID.includes('test') || // テスト値
-                       FACEBOOK_APP_SECRET.includes('temp') || // 一時的な値
-                       FACEBOOK_APP_SECRET.includes('test') || // テスト値
+                       FACEBOOK_APP_ID === 'temporary_app_id' || // .env.starter.templateの値
+                       FACEBOOK_APP_SECRET === 'temporary_app_secret' || // .env.starter.templateの値
                        process.env.FORCE_DEMO_MODE === 'true'
     
     // 無効な環境変数が設定されているかどうかを判定
