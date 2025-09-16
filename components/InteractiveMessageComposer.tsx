@@ -280,7 +280,8 @@ export default function InteractiveMessageComposer() {
       try {
         console.log(`📤 送信開始: ${recipientId}`)
         
-        const response = await fetch('/api/messages/send-direct', {
+        // Page Access Token優先で送信
+        const response = await fetch('/api/messages/send-page', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -288,8 +289,7 @@ export default function InteractiveMessageComposer() {
           body: JSON.stringify({
             recipientId: recipientId,
             message: state.message,
-            accessToken: authData.accessToken,
-            userId: authData.userId
+            pageAccessToken: authData.pageAccessToken || authData.accessToken
           })
         })
 

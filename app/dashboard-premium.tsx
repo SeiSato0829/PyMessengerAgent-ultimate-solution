@@ -401,18 +401,27 @@ export default function PremiumMessengerDashboard() {
         </div>
       </header>
 
-      {/* Interactive Message Composer - 最重要！メッセージ送信UI */}
+      {/* メインセクション - メッセージ送信と認証 */}
       <div className="container-responsive py-6">
-        <div className="bg-yellow-500/20 border-2 border-yellow-400 rounded-xl p-4 mb-4">
-          <h2 className="text-yellow-300 text-xl font-bold mb-2">⚠️ メッセージ送信コンポーネント</h2>
-          <p className="text-yellow-200">下記で受信者を選択してメッセージを送信できます</p>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Left: Message Composer */}
+          <div className="lg:col-span-1">
+            <div className="bg-yellow-500/20 border-2 border-yellow-400 rounded-xl p-4 mb-4">
+              <h2 className="text-yellow-300 text-xl font-bold mb-2">📤 メッセージ送信</h2>
+              <p className="text-yellow-200">受信者を選択してメッセージを送信</p>
+            </div>
+            <InteractiveMessageComposer />
+          </div>
+          
+          {/* Right: Authentication */}
+          <div className="lg:col-span-1">
+            <div className="bg-blue-500/20 border-2 border-blue-400 rounded-xl p-4 mb-4">
+              <h2 className="text-blue-300 text-xl font-bold mb-2">🔐 認証状態</h2>
+              <p className="text-blue-200">Facebook認証の確認と管理</p>
+            </div>
+            <FacebookAuthPanel />
+          </div>
         </div>
-        <InteractiveMessageComposer />
-      </div>
-
-      {/* Facebook Auth Panel - 認証状態確認 */}
-      <div className="container-responsive py-4">
-        <FacebookAuthPanel />
       </div>
 
       <div className="container-responsive spacing-responsive-lg">
