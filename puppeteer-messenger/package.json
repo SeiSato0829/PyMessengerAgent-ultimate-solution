@@ -1,0 +1,18 @@
+{
+  "name": "facebook-messenger-automation",
+  "version": "1.0.0",
+  "description": "Facebook Messenger自動送信（Puppeteer）",
+  "main": "facebook-messenger-bot.js",
+  "scripts": {
+    "start": "node facebook-messenger-bot.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}

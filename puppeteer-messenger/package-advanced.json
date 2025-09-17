@@ -1,0 +1,29 @@
+{
+  "name": "ultimate-stealth-messenger",
+  "version": "2.0.0",
+  "description": "最高レベルの検出回避技術を使用したFacebook Messenger自動化",
+  "main": "ultimate-stealth-bot.js",
+  "scripts": {
+    "start": "node ultimate-stealth-bot.js",
+    "test": "node test-stealth.js",
+    "setup": "node setup.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.6.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-extra-plugin-adblocker": "^2.13.6",
+    "puppeteer-extra-plugin-anonymize-ua": "^2.4.6",
+    "dotenv": "^16.3.1",
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.6",
+    "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "puppeteer-extra-plugin-recaptcha": "^3.6.8",
+    "proxy-agent": "^6.3.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
