@@ -9,41 +9,31 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const action = searchParams.get('action')
 
-  // 強制デモモードチェック
-  if (process.env.FORCE_DEMO_MODE === 'true') {
-    console.log('⚠️ FORCE_DEMO_MODE is enabled')
-  }
+  // 本番モード強制
+  console.log('✅ Facebook認証：本番モード動作')
 
   try {
-    // Facebook App設定を取得（デフォルト値なし）
-    const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
-    const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
+    // Facebook App設定を取得（ハードコーディングも含む）
+    const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID || '1074848747815619'
+    const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET || 'ae554f1df345416e5d6d08c22d07685d'
     const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.onrender.com'
     const FACEBOOK_REDIRECT_URI = `${APP_URL}/api/auth/facebook/callback`
 
-    // デモモード判定（修正版 - 実際の値を許可）
-    const isDemoMode = !FACEBOOK_APP_ID || 
-                       !FACEBOOK_APP_SECRET ||
-                       FACEBOOK_APP_ID === 'your-facebook-app-id' ||
-                       FACEBOOK_APP_SECRET === 'your-facebook-app-secret' ||
-                       FACEBOOK_APP_ID === 'temporary_app_id' || // .env.starter.templateの値
-                       FACEBOOK_APP_SECRET === 'temporary_app_secret' || // .env.starter.templateの値
-                       process.env.FORCE_DEMO_MODE === 'true' // 強制デモモード
+    // デモモード判定を無効化 - 常に本番モードで動作
+    const isDemoMode = false // 強制的に本番モードを有効化
 
     // デバッグログ出力
     console.log('🔍 Facebook Auth Debug:', {
       action,
-      appIdExists: !!FACEBOOK_APP_ID,
+      appId: FACEBOOK_APP_ID || 'NOT_SET',
       appIdLength: FACEBOOK_APP_ID?.length || 0,
-      secretExists: !!FACEBOOK_APP_SECRET,
       secretLength: FACEBOOK_APP_SECRET?.length || 0,
-      isDemoMode,
-      forceDemoMode: process.env.FORCE_DEMO_MODE === 'true'
+      isDemoMode: false,
+      mode: 'PRODUCTION'
     })
 
-    // デモモードまたは環境変数未設定の場合は、常にデモページを返す
-    // action === 'login' でも無効な環境変数の場合はデモページを表示
-    if (isDemoMode || action === 'demo' || (action === 'login' && isDemoMode)) {
+    // デモモードは完全に無効化
+    if (action === 'demo') {
       console.log('📝 Facebook認証：デモモード（環境変数未設定または無効）')
       
       return new NextResponse(
@@ -327,9 +317,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // ここから本番モードの処理（環境変数が全て有効な場合のみ）
-    // この時点でisDemoModeがfalseであることが保証されている
-    if (action === 'login' && !isDemoMode) {
+    // 本番モードの処理（常に有効）
+    if (action === 'login') {
       console.log('✅ Facebook認証：本番モード開始')
       
       // Facebook OAuth認証URL生成

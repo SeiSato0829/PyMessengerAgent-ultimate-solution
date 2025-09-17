@@ -39,18 +39,12 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    // 環境変数の詳細チェック
-    const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
-    const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
+    // 環境変数の詳細チェック（ハードコード値をフォールバック）
+    const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID || '1074848747815619'
+    const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET || 'ae554f1df345416e5d6d08c22d07685d'
     
-    // デモモードチェック（環境変数が正しく設定されていない場合）
-    const isDemoMode = !FACEBOOK_APP_ID || 
-                       !FACEBOOK_APP_SECRET ||
-                       FACEBOOK_APP_ID === 'your-facebook-app-id' ||
-                       FACEBOOK_APP_SECRET === 'your-facebook-app-secret' ||
-                       FACEBOOK_APP_ID === 'temporary_app_id' || // .env.starter.templateの値
-                       FACEBOOK_APP_SECRET === 'temporary_app_secret' || // .env.starter.templateの値
-                       process.env.FORCE_DEMO_MODE === 'true'
+    // デモモードを完全に無効化
+    const isDemoMode = false // 常に本番モード
     
     // 無効な環境変数が設定されているかどうかを判定
     const hasInvalidEnvVars = FACEBOOK_APP_ID && FACEBOOK_APP_SECRET && (
@@ -62,33 +56,12 @@ export async function GET(request: NextRequest) {
       FACEBOOK_APP_SECRET.includes('test')
     )
 
-    if (isDemoMode) {
-      console.log('📝 デモモードで動作中', {
-        hasInvalidEnvVars,
-        appIdLength: FACEBOOK_APP_ID?.length || 0,
-        secretLength: FACEBOOK_APP_SECRET?.length || 0
-      })
-      
-      // デモモード用の固定レスポンス
-      return NextResponse.json({
-        authenticated: false,
-        isDemoMode: true,
-        message: hasInvalidEnvVars
-          ? '🚨 無効な環境変数が設定されています！Render.comで FACEBOOK_APP_ID と FACEBOOK_APP_SECRET を削除してください。'
-          : 'デモモードで動作中です。Facebook認証を使用するには環境変数を設定してください。',
-        requiredEnvVars: [
-          'FACEBOOK_APP_ID',
-          'FACEBOOK_APP_SECRET', 
-          'NEXT_PUBLIC_SUPABASE_URL',
-          'NEXT_PUBLIC_SUPABASE_ANON_KEY'
-        ],
-        demoFeatures: {
-          messaging: 'シミュレーションモード',
-          authentication: 'ダミー認証',
-          database: 'メモリ内ストレージ'
-        }
-      })
-    }
+    // 本番モードで動作
+    console.log('✅ 本番モードで動作中', {
+      appId: FACEBOOK_APP_ID,
+      appIdLength: FACEBOOK_APP_ID?.length || 0,
+      secretLength: FACEBOOK_APP_SECRET?.length || 0
+    })
 
     // Supabase設定チェック
     const hasSupabase = process.env.NEXT_PUBLIC_SUPABASE_URL && 

@@ -73,9 +73,17 @@ export default function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Facebook Messenger 送信システム</h1>
-          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
-            🔶 デモモード動作中
-          </span>
+          <div className="flex gap-2">
+            <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
+              🔶 デモモード動作中
+            </span>
+            <a 
+              href="/dashboard-auth"
+              className="px-4 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold hover:bg-blue-700"
+            >
+              認証版へ →
+            </a>
+          </div>
         </div>
         
         {/* メイン送信フォーム */}
