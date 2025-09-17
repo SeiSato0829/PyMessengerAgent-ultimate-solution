@@ -54,6 +54,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import InteractiveMessageComposer from '@/components/InteractiveMessageComposer'
+import { DirectMessageSender } from '@/components/DirectMessageSender'
 import AdvancedAnalyticsDashboard from '@/components/AdvancedAnalyticsDashboard'
 import FacebookAuthPanel from '@/components/FacebookAuthPanel'
 import RealtimeDebugPanel from '@/components/RealtimeDebugPanel'
@@ -580,6 +581,16 @@ export default function PremiumMessengerDashboard() {
               </h3>
             </div>
             <InteractiveMessageComposer />
+          </div>
+          
+          {/* Direct Message Sender - 友達じゃない人への送信 */}
+          <div className="md:col-span-2 xl:col-span-1">
+            <div className="bg-purple-500/10 rounded-t-xl p-3 border-b border-purple-500/30">
+              <h3 className="text-purple-300 font-semibold flex items-center">
+                <span className="mr-2">🚀</span>ダイレクトメッセージ送信
+              </h3>
+            </div>
+            <DirectMessageSender />
           </div>
           
           {/* Analytics Dashboard */}
