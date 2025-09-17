@@ -401,28 +401,7 @@ export default function PremiumMessengerDashboard() {
         </div>
       </header>
 
-      {/* メインセクション - メッセージ送信と認証 */}
-      <div className="container-responsive py-6">
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Left: Message Composer */}
-          <div className="lg:col-span-1">
-            <div className="bg-yellow-500/20 border-2 border-yellow-400 rounded-xl p-4 mb-4">
-              <h2 className="text-yellow-300 text-xl font-bold mb-2">📤 メッセージ送信</h2>
-              <p className="text-yellow-200">受信者を選択してメッセージを送信</p>
-            </div>
-            <InteractiveMessageComposer />
-          </div>
-          
-          {/* Right: Authentication */}
-          <div className="lg:col-span-1">
-            <div className="bg-blue-500/20 border-2 border-blue-400 rounded-xl p-4 mb-4">
-              <h2 className="text-blue-300 text-xl font-bold mb-2">🔐 認証状態</h2>
-              <p className="text-blue-200">Facebook認証の確認と管理</p>
-            </div>
-            <FacebookAuthPanel />
-          </div>
-        </div>
-      </div>
+      {/* メインセクション - 重複削除済み（下部で統合表示） */}
 
       <div className="container-responsive spacing-responsive-lg">
         {/* Enhanced KPI Cards - 8段階レスポンシブグリッド */}
@@ -563,7 +542,20 @@ export default function PremiumMessengerDashboard() {
           ))}
         </div>
 
-        {/* Interactive Components Section - 8段階レスポンシブ */}
+        {/* ⭐ メイン機能セクション - 統合コンポーネント（重複なし） */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl p-4 border border-white/20">
+            <h2 className="text-white text-2xl font-bold flex items-center">
+              <span className="mr-3">🎯</span>
+              <span className="bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text">
+                メッセージング＆認証システム
+              </span>
+            </h2>
+            <p className="text-gray-300 mt-2">認証状態の確認、メッセージ送信、分析をワンストップで管理</p>
+          </div>
+        </div>
+
+        {/* Interactive Components Section - 統合表示（1箇所のみ） */}
         <div className="grid gap-4 mb-6
                         sm:gap-5 sm:mb-7
                         md:gap-6 md:mb-8 md:grid-cols-2
@@ -572,16 +564,31 @@ export default function PremiumMessengerDashboard() {
                         2xl:gap-10 2xl:mb-12">
           {/* Facebook Authentication Panel */}
           <div className="md:col-span-1 xl:col-span-1">
+            <div className="bg-blue-500/10 rounded-t-xl p-3 border-b border-blue-500/30">
+              <h3 className="text-blue-300 font-semibold flex items-center">
+                <span className="mr-2">🔐</span>認証管理
+              </h3>
+            </div>
             <FacebookAuthPanel />
           </div>
           
           {/* Message Composer */}
           <div className="md:col-span-1 xl:col-span-1">
+            <div className="bg-yellow-500/10 rounded-t-xl p-3 border-b border-yellow-500/30">
+              <h3 className="text-yellow-300 font-semibold flex items-center">
+                <span className="mr-2">📤</span>メッセージ送信
+              </h3>
+            </div>
             <InteractiveMessageComposer />
           </div>
           
           {/* Analytics Dashboard */}
           <div className="md:col-span-2 xl:col-span-1">
+            <div className="bg-green-500/10 rounded-t-xl p-3 border-b border-green-500/30">
+              <h3 className="text-green-300 font-semibold flex items-center">
+                <span className="mr-2">📊</span>分析ダッシュボード
+              </h3>
+            </div>
             <AdvancedAnalyticsDashboard />
           </div>
         </div>
