@@ -1,53 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(false)
   const router = useRouter()
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      if (isSignUp) {
-        // サインアップ
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`
-          }
-        })
-        
-        if (error) throw error
-        
-        toast.success('確認メールを送信しました。メールをご確認ください。')
-      } else {
-        // ログイン
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        })
-        
-        if (error) throw error
-        
-        toast.success('ログインしました')
-        router.push('/')
-      }
-    } catch (error: any) {
-      console.error('認証エラー:', error)
-      toast.error((error as any).message || '認証に失敗しました')
-    } finally {
-      setIsLoading(false)
-    }
+  const handleSkipLogin = () => {
+    // ログインをスキップしてダッシュボードへ
+    router.push('/dashboard')
   }
 
   return (
@@ -61,87 +21,43 @@ export default function LoginPage() {
             PyMessenger Dashboard
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {isSignUp ? 'アカウントを作成' : 'アカウントにログイン'}
+            Facebook Messenger自動化システム
           </p>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleAuth}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                メールアドレス
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="your@example.com"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                パスワード
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="パスワード（8文字以上）"
-              />
-            </div>
-          </div>
-
-          <div>
+        <div className="mt-8 space-y-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-semibold mb-4">システムアクセス</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              現在、デモモードで動作しています。
+              Supabase環境変数が設定されていないため、
+              認証機能は無効化されています。
+            </p>
+            
             <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSkipLogin}
+              className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              {isLoading && <div className="loading-spinner mr-2"></div>}
-              {isSignUp ? 'アカウント作成' : 'ログイン'}
+              ダッシュボードへ進む（認証スキップ）
             </button>
           </div>
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-blue-600 hover:text-blue-500 text-sm"
-            >
-              {isSignUp 
-                ? 'すでにアカウントをお持ちですか？ログイン' 
-                : 'アカウントをお持ちでない場合は作成'
-              }
-            </button>
-          </div>
-        </form>
-
-        {/* 重要な注意事項 */}
-        <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <span className="text-yellow-400">⚠️</span>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">
-                重要な注意事項
-              </h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>個人利用に限定してください</li>
-                  <li>Facebook規約違反のリスクがあります</li>
-                  <li>使用は自己責任です</li>
-                </ul>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-yellow-400">⚠️</span>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">
+                  デモモードについて
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>認証機能は利用できません</li>
+                    <li>データは保存されません</li>
+                    <li>本番環境では環境変数を設定してください</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
