@@ -169,7 +169,3 @@ export default function DashboardPage() {
   )
 }
 
-export const metadata = {
-  title: 'PyMessenger Agent - ダッシュボード',
-  description: 'Facebook Messenger自動化システム'
-}
