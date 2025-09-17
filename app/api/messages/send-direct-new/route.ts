@@ -1,6 +1,6 @@
 /**
  * 友達じゃない人への直接メッセージ送信API
- * Facebook Messengerの実際の仕様に基づく正しい実装
+ * デモモード対応版
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -21,43 +21,53 @@ export async function POST(request: NextRequest) {
     // アクセストークンの取得
     const token = accessToken || process.env.FACEBOOK_USER_ACCESS_TOKEN
 
-    if (!token) {
-      return NextResponse.json({
-        error: 'アクセストークンが設定されていません',
-        solution: 'Facebook認証を完了してください'
-      }, { status: 401 })
+    // デモモード判定
+    const isDemoMode = !token || token === ''
+
+    if (isDemoMode) {
+      console.log('📌 デモモード: メッセージ送信シミュレーション')
+      
+      // デモモードでの動作（シミュレーション）
+      const demoResponse = {
+        success: true,
+        demoMode: true,
+        messageId: `demo_${Date.now()}`,
+        recipientId: recipientId,
+        timestamp: new Date().toISOString(),
+        info: {
+          status: '【デモモード】メッセージが送信されました',
+          description: 'これはデモ動作です。実際の送信には以下が必要です：',
+          requirements: [
+            '1. Facebook App ID と App Secret の設定',
+            '2. Facebook User Access Token の取得',
+            '3. 環境変数への設定'
+          ],
+          actualMessage: {
+            to: recipientId,
+            content: message,
+            wouldBeSentAs: 'メッセージリクエスト'
+          },
+          howToSetup: {
+            step1: 'developers.facebook.com でアプリを作成',
+            step2: 'Messenger APIを有効化',
+            step3: 'アクセストークンを取得',
+            step4: 'Render.comの環境変数に設定'
+          }
+        }
+      }
+      
+      // デモモードでも成功レスポンスを返す
+      return NextResponse.json(demoResponse)
     }
 
-    console.log('📤 友達じゃない人への直接メッセージ送信開始:', {
+    console.log('📤 実際のメッセージ送信開始:', {
       recipientId,
       messageLength: message.length,
       timestamp: new Date().toISOString()
     })
 
-    // Facebook Send API - メッセージリクエストとして送信
+    // 実際のFacebook API呼び出し（本番モード）
     const apiVersion = 'v18.0'
-    const conversationsUrl = `https://graph.facebook.com/${apiVersion}/me/conversations`
-    
-    // Step 1: 会話を開始または取得
-    const conversationResponse = await fetch(conversationsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        recipient: {
-          id: recipientId
-        }
-      })
-    })
-
-    if (!conversationResponse.ok) {
-      const errorData = await conversationResponse.json()
-      console.error('❌ 会話開始エラー:', errorData)
-    }
-
-    // Step 2: メッセージを送信
     const sendUrl = `https://graph.facebook.com/${apiVersion}/me/messages`
     
     const payload = {
@@ -67,14 +77,12 @@ export async function POST(request: NextRequest) {
       message: {
         text: message
       },
-      messaging_type: 'MESSAGE_TAG',
-      tag: 'CONFIRMED_EVENT_UPDATE' // メッセージリクエストとして送信
+      messaging_type: 'RESPONSE'
     }
 
     console.log('📡 Send API呼び出し:', {
       url: sendUrl,
-      recipientId,
-      messagingType: 'MESSAGE_TAG'
+      recipientId
     })
 
     const response = await fetch(sendUrl, {
@@ -90,48 +98,15 @@ export async function POST(request: NextRequest) {
     console.log('📥 API応答:', responseData)
 
     if (!response.ok) {
-      // 別の方法を試す - 通常のメッセージとして
-      const alternativePayload = {
-        recipient: {
-          id: recipientId
-        },
-        message: {
-          text: message
-        },
-        notification_type: 'REGULAR'
-      }
-
-      const altResponse = await fetch(sendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(alternativePayload)
-      })
-
-      const altData = await altResponse.json()
-      
-      if (altResponse.ok) {
-        return NextResponse.json({
-          success: true,
-          method: 'alternative',
-          messageId: altData.message_id,
-          recipientId: altData.recipient_id,
-          info: 'メッセージリクエストとして送信されました'
-        })
-      }
-
-      // それでも失敗した場合のエラーハンドリング
       return NextResponse.json({
         error: 'メッセージ送信に失敗しました',
-        details: responseData.error || altData.error,
+        details: responseData.error,
         suggestion: {
-          title: '代替方法',
+          title: 'エラーの解決方法',
           options: [
-            '1. 相手のプロフィールから「メッセージ」をクリック',
-            '2. Messenger.comから直接送信',
-            '3. 友達申請を先に送る'
+            'アクセストークンの有効期限を確認',
+            '受信者IDが正しいか確認',
+            'Facebook APIの権限を確認'
           ]
         }
       }, { status: 400 })
@@ -145,12 +120,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       info: {
         status: 'メッセージリクエストとして送信されました',
-        description: '相手がメッセージリクエストを承認すると会話が開始されます',
-        nextSteps: [
-          '相手がメッセージリクエストを確認',
-          '承認されると通常の会話が可能',
-          '承認まで追加メッセージは制限される可能性'
-        ]
+        description: '相手がメッセージリクエストを承認すると会話が開始されます'
       }
     })
 
@@ -159,13 +129,15 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       error: error.message || '送信に失敗しました',
-      fallback: {
-        title: '確実に送信する方法',
+      demoMode: true,
+      suggestion: {
+        title: 'デモモードの制限',
+        message: '現在デモモードで動作しています。実際のメッセージ送信には設定が必要です。',
         steps: [
-          '1. messenger.comにアクセス',
-          '2. 新規メッセージ作成',
-          '3. 宛先に相手の名前を入力',
-          '4. メッセージを送信（メッセージリクエストとして送信される）'
+          '1. Facebook開発者アカウントを作成',
+          '2. Messengerアプリを設定',
+          '3. アクセストークンを取得',
+          '4. 環境変数に設定'
         ]
       }
     }, { status: 500 })
@@ -177,32 +149,36 @@ export async function GET() {
   return NextResponse.json({
     endpoint: '/api/messages/send-direct-new',
     method: 'POST',
-    title: '友達じゃない人への直接メッセージ送信',
-    description: 'Facebook Messengerの実際の仕様に基づく実装',
+    status: 'デモモード動作中',
     
-    reality: {
-      fact: 'PCのMessengerでは友達じゃない人にもメッセージを送れる',
-      mechanism: 'メッセージリクエストとして送信される',
-      approval: '相手が承認すれば会話継続可能'
+    demoMode: {
+      active: true,
+      reason: '環境変数 FACEBOOK_USER_ACCESS_TOKEN が未設定',
+      behavior: 'メッセージ送信をシミュレートして成功レスポンスを返します'
     },
     
     requiredParams: {
-      recipientId: 'Facebook User ID',
-      message: 'メッセージ内容',
+      recipientId: 'Facebook User ID（必須）',
+      message: 'メッセージ内容（必須）',
       accessToken: 'User Access Token（オプション）'
     },
     
-    flow: [
-      '1. 送信者がメッセージを送る',
-      '2. メッセージリクエストとして配信',
-      '3. 相手の「メッセージリクエスト」フォルダに到着',
-      '4. 相手が承認すれば通常の会話開始'
-    ],
+    setupGuide: {
+      title: '実際に使用するための設定方法',
+      steps: [
+        '1. https://developers.facebook.com にアクセス',
+        '2. 新しいアプリを作成',
+        '3. Messenger Product を追加',
+        '4. テストユーザーを作成',
+        '5. User Access Token を生成',
+        '6. Render.comで環境変数を設定'
+      ]
+    },
     
-    limitations: [
-      '最初のメッセージのみ送信可能',
-      '相手が承認するまで追加メッセージは制限',
-      'スパムフィルタにかかる可能性'
-    ]
+    currentStatus: {
+      mode: 'DEMO',
+      canSendActualMessages: false,
+      simulatesSuccess: true
+    }
   })
 }

@@ -8,6 +8,26 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  
+  // URLからIDを抽出する関数
+  const extractIdFromUrl = (input: string) => {
+    // FacebookプロフィールURLからIDを抽出
+    const patterns = [
+      /facebook\.com\/profile\.php\?id=(\d+)/,
+      /facebook\.com\/([^/?]+)/,
+      /fb\.com\/([^/?]+)/
+    ]
+    
+    for (const pattern of patterns) {
+      const match = input.match(pattern)
+      if (match) {
+        return match[1]
+      }
+    }
+    
+    // そのまま返す（すでにIDの場合）
+    return input
+  }
 
   const sendMessage = async () => {
     if (!recipientId || !message) {
@@ -19,12 +39,15 @@ export default function DashboardPage() {
     setError(null)
     setResult(null)
 
+    // URLからIDを抽出
+    const extractedId = extractIdFromUrl(recipientId)
+
     try {
       const response = await fetch('/api/messages/send-direct-new', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipientId,
+          recipientId: extractedId,
           message,
           accessToken: '' // デモモードでは空
         })
@@ -48,7 +71,12 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Facebook Messenger 送信システム</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Facebook Messenger 送信システム</h1>
+          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
+            🔶 デモモード動作中
+          </span>
+        </div>
         
         {/* メイン送信フォーム */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -103,9 +131,33 @@ export default function DashboardPage() {
 
             {/* 成功表示 */}
             {result && result.success && (
-              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded text-green-700">
-                <p className="font-semibold">送信成功！</p>
-                <p className="text-sm mt-1">{result.info?.status || 'メッセージが送信されました'}</p>
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+                <p className="font-semibold text-green-700">
+                  {result.demoMode ? '✅ デモ送信成功！' : '✅ 送信成功！'}
+                </p>
+                <p className="text-sm mt-1 text-green-600">
+                  {result.info?.status || 'メッセージが送信されました'}
+                </p>
+                
+                {result.demoMode && (
+                  <div className="mt-3 p-2 bg-white rounded text-sm">
+                    <p className="font-semibold text-gray-700 mb-2">送信内容（デモ）:</p>
+                    <div className="space-y-1 text-gray-600">
+                      <p>📨 宛先: {result.info?.actualMessage?.to}</p>
+                      <p>💬 内容: {result.info?.actualMessage?.content}</p>
+                      <p>📋 形式: {result.info?.actualMessage?.wouldBeSentAs}</p>
+                    </div>
+                    
+                    <div className="mt-3 pt-3 border-t">
+                      <p className="font-semibold text-blue-700 mb-1">実際に送信するには:</p>
+                      <ol className="list-decimal list-inside text-xs text-blue-600 space-y-1">
+                        {result.info?.requirements?.map((req: string, idx: number) => (
+                          <li key={idx}>{req}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
