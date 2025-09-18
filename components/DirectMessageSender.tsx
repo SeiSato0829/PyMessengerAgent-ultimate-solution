@@ -93,10 +93,13 @@ export function DirectMessageSender() {
   return (
     <div className="w-full bg-white/10 backdrop-blur-xl rounded-2xl p-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2">Direct Message Sender</h2>
+        <h2 className="text-2xl font-bold mb-2">Direct Message Sender (API)</h2>
         <p className="text-gray-300">
-          友達じゃない人にも直接メッセージを送信
+          API経由での送信（制限あり）
         </p>
+        <div className="mt-2 p-2 bg-yellow-500/20 rounded text-xs text-yellow-300">
+          ⚠️ Facebook APIの制限により、友達以外への送信は失敗する可能性があります
+        </div>
       </div>
       <div className="space-y-6">
         <div className="bg-blue-50 p-4 rounded-lg">
@@ -174,6 +177,15 @@ export function DirectMessageSender() {
           <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
             <h3 className="font-semibold text-red-200 mb-1">エラー</h3>
             <p className="text-red-300">{error}</p>
+            {error.includes('API') || error.includes('権限') ? (
+              <div className="mt-3 p-3 bg-yellow-500/20 rounded">
+                <p className="text-yellow-200 text-sm font-semibold mb-1">💡 代替方法：</p>
+                <p className="text-yellow-300 text-sm">
+                  上の「Messenger Direct Link」を使用してください。
+                  Facebook Webサイトと同じようにMessengerが開きます。
+                </p>
+              </div>
+            ) : null}
           </div>
         )}
 

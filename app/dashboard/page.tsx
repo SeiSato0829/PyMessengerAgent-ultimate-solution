@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { MessengerLauncher } from '@/components/MessengerLauncher'
 
 export default function DashboardPage() {
   const [recipientId, setRecipientId] = useState('')
@@ -86,7 +87,12 @@ export default function DashboardPage() {
           </div>
         </div>
         
-        {/* メイン送信フォーム */}
+        {/* Messenger Launcher (推奨) */}
+        <div className="mb-8">
+          <MessengerLauncher />
+        </div>
+        
+        {/* メイン送信フォーム (API - 制限あり) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">メッセージ送信</h2>
