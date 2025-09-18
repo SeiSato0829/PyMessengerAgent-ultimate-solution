@@ -5,7 +5,6 @@ import { MessengerLauncher } from '@/components/MessengerLauncher'
 import { AutoMessengerSender } from '@/components/AutoMessengerSender'
 import { FacebookBypassSender } from '@/components/FacebookBypassSender'
 import { UltimateFacebookSender } from '@/components/UltimateFacebookSender'
-import { PerfectMessengerSender } from '@/components/PerfectMessengerSender'
 
 export default function DashboardPage() {
   const [recipientId, setRecipientId] = useState('')
@@ -91,10 +90,6 @@ export default function DashboardPage() {
           </div>
         </div>
         
-        {/* 完璧なMessenger送信システム (最終バージョン) */}
-        <div className="mb-8">
-          <PerfectMessengerSender />
-        </div>
 
         {/* 究極のFacebook送信システム (最優先) */}
         <div className="mb-8">
