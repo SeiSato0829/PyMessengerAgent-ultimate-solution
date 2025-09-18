@@ -322,9 +322,9 @@ export async function GET(request: NextRequest) {
       console.log('✅ Facebook認証：本番モード開始')
       
       // Facebook OAuth認証URL生成
-      // 最小限の権限のみ要求（public_profileのみ）
-      // emailも一時的に削除して動作確認
-      const scopes = 'public_profile' // 権限なしか、public_profileのみで開始
+      // 重要: 個人アカウントではメッセージ送信権限は取得不可
+      // Facebook Page経由の送信が必要
+      const scopes = 'public_profile,email,pages_show_list,pages_messaging,pages_read_engagement,pages_manage_metadata'
 
       const authUrl = new URL('https://www.facebook.com/v19.0/dialog/oauth') // 最新バージョンに更新
       authUrl.searchParams.set('client_id', FACEBOOK_APP_ID!)

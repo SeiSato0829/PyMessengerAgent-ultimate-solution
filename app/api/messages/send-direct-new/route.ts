@@ -125,13 +125,17 @@ export async function POST(request: NextRequest) {
       if (responseData.error?.message) {
         errorMessage = responseData.error.message
         
-        // 一般的なFacebook APIエラーの対処
-        if (errorMessage.includes('Invalid OAuth')) {
+        // Facebook APIエラーの詳細判定
+        if (errorMessage.includes('Invalid OAuth') || errorMessage.includes('Error validating access token')) {
           errorMessage = 'アクセストークンが無効です。再認証してください'
-        } else if (errorMessage.includes('permissions')) {
-          errorMessage = '必要な権限がありません。Facebook認証を再度行ってください'
+        } else if (errorMessage.includes('permissions') || errorMessage.includes('capability') || errorMessage.includes('permission')) {
+          errorMessage = '重要：Facebook APIの仕様上、友達じゃない人への直接メッセージ送信は不可能です'
         } else if (errorMessage.includes('does not exist')) {
           errorMessage = '指定された受信者IDが存在しません'
+        } else if (errorMessage.includes('Cannot message users') || errorMessage.includes('messaging')) {
+          errorMessage = 'Facebook API制限：友達以外へのメッセージ送信はAPIで禁止されています'
+        } else if (errorMessage.includes('(#200)')) {
+          errorMessage = '権限エラー：個人アカウントからのメッセージ送信権限は存在しません'
         }
       }
 
@@ -140,12 +144,13 @@ export async function POST(request: NextRequest) {
         details: errorDetails,
         recipientId: recipientId,
         suggestion: {
-          title: '解決方法',
-          options: [
-            '正しいFacebook IDを入力 (例: 100012345678901)',
-            '完全なプロフィールURLを入力',
-            '/dashboard-authでFacebook認証を再実行',
-            'アクセストークンの有効期限を確認'
+          title: '重要なお知らせ',
+          message: 'Facebook APIの仕様上、友達じゃない人への直接メッセージ送信は不可能です',
+          alternatives: [
+            '✅ 友達へのメッセージ送信は可能',
+            '✅ Facebook Page経由の自動返信ボット',
+            '✅ Messenger広告を使用したアプローチ',
+            '❌ 友達じゃない人へのAPI経由送信（Facebookポリシーで禁止）'
           ]
         },
         debugInfo: {

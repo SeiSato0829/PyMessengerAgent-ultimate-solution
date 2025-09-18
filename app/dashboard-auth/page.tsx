@@ -95,8 +95,30 @@ export default function AuthenticatedDashboard() {
           </div>
         </div>
 
+        {/* 重要な警告 */}
+        <div className="mt-8 bg-red-500/20 border border-red-500/50 rounded-xl p-6 mb-4">
+          <h3 className="text-lg font-semibold mb-4 text-red-400">⚠️ 重要：Facebook APIの制限事項</h3>
+          <div className="space-y-2 text-sm">
+            <p className="text-red-300 font-bold">
+              Facebook APIの仕様により、友達じゃない人への直接メッセージ送信は不可能です
+            </p>
+            <p className="text-gray-300">
+              これは技術的な問題ではなく、Facebookのスパム防止ポリシーによる制限です。
+            </p>
+            <div className="mt-4 p-3 bg-white/10 rounded">
+              <p className="text-white font-semibold mb-2">代替案：</p>
+              <ul className="space-y-1 text-gray-300">
+                <li>✅ 友達へのメッセージ送信</li>
+                <li>✅ Facebook Page経由の自動返信ボット</li>
+                <li>✅ Messenger広告キャンペーン</li>
+                <li>❌ 友達以外への直接送信（API制限）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         {/* 設定情報 */}
-        <div className="mt-8 bg-white/5 rounded-xl p-6">
+        <div className="bg-white/5 rounded-xl p-6">
           <h3 className="text-lg font-semibold mb-4">システム設定</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white/10 rounded-lg p-4">
