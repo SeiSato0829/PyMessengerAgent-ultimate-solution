@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { MessengerLauncher } from '@/components/MessengerLauncher'
 import { AutoMessengerSender } from '@/components/AutoMessengerSender'
+import { FacebookBypassSender } from '@/components/FacebookBypassSender'
 
 export default function DashboardPage() {
   const [recipientId, setRecipientId] = useState('')
@@ -86,6 +87,11 @@ export default function DashboardPage() {
               認証版へ →
             </a>
           </div>
+        </div>
+        
+        {/* Facebook制限回避送信 (緊急対応) */}
+        <div className="mb-8">
+          <FacebookBypassSender />
         </div>
         
         {/* 完全自動送信 (最新機能) */}

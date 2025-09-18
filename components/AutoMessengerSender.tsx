@@ -40,20 +40,68 @@ export function AutoMessengerSender() {
     try {
       const processedId = extractIdFromUrl(recipientId)
       
-      // ステップ1: Messengerウィンドウを開く
-      setStatus('📱 Messengerウィンドウを開いています...')
+      // ステップ1: 制限検出とMessengerウィンドウを開く
+      setStatus('🔍 アクセス制限をチェック中...')
+      setProgress(10)
+      
+      // 複数のアクセス方法を試行
+      const accessMethods = [
+        {
+          name: 'm.me (最も制限が少ない)',
+          url: `https://m.me/${processedId}`,
+          options: 'width=600,height=700,scrollbars=yes,resizable=yes'
+        },
+        {
+          name: 'Facebook Lite',
+          url: `https://mbasic.facebook.com/messages/thread/${processedId}`,
+          options: 'width=800,height=600,scrollbars=yes,resizable=yes'
+        },
+        {
+          name: 'Facebook Mobile',
+          url: `https://m.facebook.com/messages/thread/${processedId}`,
+          options: 'width=600,height=700,scrollbars=yes,resizable=yes'
+        },
+        {
+          name: 'Facebook Desktop (標準)',
+          url: `https://www.facebook.com/messages/t/${processedId}`,
+          options: 'width=1000,height=800,scrollbars=yes,resizable=yes'
+        }
+      ]
+      
+      setStatus('📱 最適なアクセス方法でMessengerを開いています...')
       setProgress(20)
       
-      const messengerUrl = `https://www.facebook.com/messages/t/${processedId}`
-      const messengerWindow = window.open(
-        messengerUrl,
-        'auto_messenger',
-        'width=1000,height=800,scrollbars=yes,resizable=yes'
-      )
+      let messengerWindow = null
+      let successMethod = null
+      
+      // 順番に試行
+      for (let i = 0; i < accessMethods.length; i++) {
+        const method = accessMethods[i]
+        try {
+          setStatus(`🔄 ${method.name}でアクセス中...`)
+          
+          messengerWindow = window.open(
+            method.url,
+            `auto_messenger_${i}`,
+            method.options
+          )
+          
+          if (messengerWindow) {
+            successMethod = method
+            break
+          }
+        } catch (error) {
+          console.log(`Method ${i + 1} failed:`, error)
+          continue
+        }
+      }
 
       if (!messengerWindow) {
-        throw new Error('ポップアップがブロックされました。ポップアップを許可してください。')
+        throw new Error('すべてのアクセス方法が失敗しました。ポップアップを許可してください。')
       }
+      
+      setStatus(`✅ ${successMethod?.name}でアクセス成功`)
+      setProgress(25)
 
       // ステップ2: ウィンドウの読み込み待機
       setStatus('⏳ Messengerの読み込みを待機中...')
@@ -239,38 +287,118 @@ export function AutoMessengerSender() {
           const fullAutomationScript = `
             ${automationLibScript}
             
-            // 自動化実行
+            // 制限検出付き自動化実行
             (async function() {
               try {
-                const automator = new MessengerAutomator();
+                // 1. Facebook制限検出
+                function detectRestrictions() {
+                  const restrictionIndicators = [
+                    'このコンテンツは現在ご利用いただけません',
+                    'Content Not Available',
+                    'This content isn\\'t available',
+                    'プライバシー設定',
+                    'privacy settings',
+                    'フィードに移動',
+                    'Go to Feed'
+                  ];
+                  
+                  const pageText = document.body.innerText || document.body.textContent || '';
+                  
+                  for (const indicator of restrictionIndicators) {
+                    if (pageText.includes(indicator)) {
+                      return {
+                        restricted: true,
+                        reason: indicator,
+                        suggestion: 'm.me URLまたはモバイル版を試してください'
+                      };
+                    }
+                  }
+                  
+                  return { restricted: false };
+                }
                 
-                // プログレスコールバック設定
-                const progressCallback = (step, percentage, status) => {
-                  window.parent.postMessage({
-                    type: 'AUTOMATION_PROGRESS',
-                    step: step,
-                    percentage: percentage,
-                    status: status
-                  }, '*');
-                };
+                // 2. ログイン状態確認
+                function checkLoginStatus() {
+                  const loginSelectors = [
+                    'input[name="email"]',
+                    'input[name="pass"]',
+                    '[data-testid="royal_login_form"]',
+                    '.login_form'
+                  ];
+                  
+                  for (const selector of loginSelectors) {
+                    if (document.querySelector(selector)) {
+                      return { loggedIn: false, needsLogin: true };
+                    }
+                  }
+                  
+                  return { loggedIn: true, needsLogin: false };
+                }
                 
-                // 自動送信実行
-                const result = await automator.sendMessage('${processedId}', \`${message.replace(/`/g, '\\`')}\`, {
-                  progressCallback: progressCallback,
-                  timeout: 60000
-                });
+                // 3. 初期チェック
+                setTimeout(() => {
+                  const restrictionCheck = detectRestrictions();
+                  const loginCheck = checkLoginStatus();
+                  
+                  if (restrictionCheck.restricted) {
+                    window.parent.postMessage({
+                      type: 'AUTOMATION_ERROR',
+                      message: \`アクセス制限: \${restrictionCheck.reason}. \${restrictionCheck.suggestion}\`
+                    }, '*');
+                    return;
+                  }
+                  
+                  if (!loginCheck.loggedIn) {
+                    window.parent.postMessage({
+                      type: 'AUTOMATION_ERROR',
+                      message: 'Facebookにログインが必要です。ログイン後に再試行してください。'
+                    }, '*');
+                    return;
+                  }
+                  
+                  // 制限なし - 通常の自動化を実行
+                  executeAutomation();
+                  
+                }, 3000);
                 
-                window.parent.postMessage({
-                  type: 'AUTOMATION_SUCCESS',
-                  message: '完全自動送信が成功しました！',
-                  result: result
-                }, '*');
+                // 4. 自動化実行
+                function executeAutomation() {
+                  const automator = new MessengerAutomator();
+                  
+                  // プログレスコールバック設定
+                  const progressCallback = (step, percentage, status) => {
+                    window.parent.postMessage({
+                      type: 'AUTOMATION_PROGRESS',
+                      step: step,
+                      percentage: percentage,
+                      status: status
+                    }, '*');
+                  };
+                  
+                  // 自動送信実行
+                  automator.sendMessage('${processedId}', \`${message.replace(/`/g, '\\`')}\`, {
+                    progressCallback: progressCallback,
+                    timeout: 60000
+                  }).then(result => {
+                    window.parent.postMessage({
+                      type: 'AUTOMATION_SUCCESS',
+                      message: '完全自動送信が成功しました！',
+                      result: result
+                    }, '*');
+                  }).catch(error => {
+                    console.error('自動化エラー:', error);
+                    window.parent.postMessage({
+                      type: 'AUTOMATION_ERROR',
+                      message: \`自動化失敗: \${error.message}\`
+                    }, '*');
+                  });
+                }
                 
               } catch (error) {
-                console.error('自動化エラー:', error);
+                console.error('制限検出エラー:', error);
                 window.parent.postMessage({
                   type: 'AUTOMATION_ERROR',
-                  message: error.message
+                  message: \`制限検出エラー: \${error.message}\`
                 }, '*');
               }
             })();
