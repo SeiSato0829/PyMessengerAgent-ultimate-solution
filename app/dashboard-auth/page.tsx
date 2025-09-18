@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import FacebookAuthPanel from '@/components/FacebookAuthPanel'
 import { DirectMessageSender } from '@/components/DirectMessageSender'
 import { MessengerLauncher } from '@/components/MessengerLauncher'
+import { AutoMessengerSender } from '@/components/AutoMessengerSender'
 
 export default function AuthenticatedDashboard() {
   const [authStatus, setAuthStatus] = useState<any>(null)
@@ -60,6 +61,9 @@ export default function AuthenticatedDashboard() {
 
           {/* メッセージ送信パネル */}
           <div className="lg:col-span-2 space-y-6">
+            {/* 完全自動送信 (最新機能) */}
+            <AutoMessengerSender />
+            
             {/* Messenger Launcher (推奨) */}
             <MessengerLauncher />
             

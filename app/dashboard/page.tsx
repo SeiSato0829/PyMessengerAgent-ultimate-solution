@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { MessengerLauncher } from '@/components/MessengerLauncher'
+import { AutoMessengerSender } from '@/components/AutoMessengerSender'
 
 export default function DashboardPage() {
   const [recipientId, setRecipientId] = useState('')
@@ -85,6 +86,11 @@ export default function DashboardPage() {
               認証版へ →
             </a>
           </div>
+        </div>
+        
+        {/* 完全自動送信 (最新機能) */}
+        <div className="mb-8">
+          <AutoMessengerSender />
         </div>
         
         {/* Messenger Launcher (推奨) */}
