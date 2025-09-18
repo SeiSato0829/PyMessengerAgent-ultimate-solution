@@ -32,6 +32,14 @@ export function DirectMessageSender() {
       return
     }
 
+    // デバッグ：トークンの状態を確認
+    console.log('📤 送信開始:', {
+      recipientId,
+      message,
+      hasToken: !!accessToken,
+      tokenLength: accessToken?.length || 0
+    })
+
     setLoading(true)
     setError(null)
     setResult(null)

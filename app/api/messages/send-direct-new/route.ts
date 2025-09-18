@@ -18,46 +18,35 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // アクセストークンの取得
+    // 受信者IDの検証（Facebook IDは数字またはユーザー名）
+    if (recipientId === 'profile.php' || recipientId.length < 5) {
+      return NextResponse.json({
+        error: '有効なFacebook IDまたは完全なプロフィールURLを入力してください',
+        example: '例: 100012345678901 または https://facebook.com/profile.php?id=100012345678901',
+        receivedValue: recipientId
+      }, { status: 400 })
+    }
+
+    // アクセストークンの取得（クライアントから送信されたトークンを優先）
     const token = accessToken || process.env.FACEBOOK_USER_ACCESS_TOKEN
 
-    // デモモード判定
-    const isDemoMode = !token || token === ''
+    // デモモード判定を無効化（常に本番モード）
+    const isDemoMode = false
 
-    if (isDemoMode) {
-      console.log('📌 デモモード: メッセージ送信シミュレーション')
+    // アクセストークンがない場合のエラー
+    if (!token || token === '') {
+      console.log('❌ アクセストークンが設定されていません')
       
-      // デモモードでの動作（シミュレーション）
-      const demoResponse = {
-        success: true,
-        demoMode: true,
-        messageId: `demo_${Date.now()}`,
-        recipientId: recipientId,
-        timestamp: new Date().toISOString(),
-        info: {
-          status: '【デモモード】メッセージが送信されました',
-          description: 'これはデモ動作です。実際の送信には以下が必要です：',
-          requirements: [
-            '1. Facebook App ID と App Secret の設定',
-            '2. Facebook User Access Token の取得',
-            '3. 環境変数への設定'
-          ],
-          actualMessage: {
-            to: recipientId,
-            content: message,
-            wouldBeSentAs: 'メッセージリクエスト'
-          },
-          howToSetup: {
-            step1: 'developers.facebook.com でアプリを作成',
-            step2: 'Messenger APIを有効化',
-            step3: 'アクセストークンを取得',
-            step4: 'Render.comの環境変数に設定'
-          }
-        }
-      }
-      
-      // デモモードでも成功レスポンスを返す
-      return NextResponse.json(demoResponse)
+      return NextResponse.json({
+        error: 'アクセストークンが設定されていません',
+        details: 'Facebook認証を完了してアクセストークンを取得してください',
+        steps: [
+          '1. /dashboard-auth にアクセス',
+          '2. 「Facebook認証を開始」ボタンをクリック',
+          '3. Facebookにログインして権限を許可',
+          '4. 認証完了後、再度メッセージ送信を試す'
+        ]
+      }, { status: 401 })
     }
 
     console.log('📤 実際のメッセージ送信開始:', {
@@ -98,16 +87,46 @@ export async function POST(request: NextRequest) {
     console.log('📥 API応答:', responseData)
 
     if (!response.ok) {
+      console.error('❌ Facebook APIエラー:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: responseData.error
+      })
+
+      // Facebook APIエラーの詳細解析
+      let errorMessage = 'メッセージ送信に失敗しました'
+      let errorDetails = responseData.error
+      
+      if (responseData.error?.message) {
+        errorMessage = responseData.error.message
+        
+        // 一般的なFacebook APIエラーの対処
+        if (errorMessage.includes('Invalid OAuth')) {
+          errorMessage = 'アクセストークンが無効です。再認証してください'
+        } else if (errorMessage.includes('permissions')) {
+          errorMessage = '必要な権限がありません。Facebook認証を再度行ってください'
+        } else if (errorMessage.includes('does not exist')) {
+          errorMessage = '指定された受信者IDが存在しません'
+        }
+      }
+
       return NextResponse.json({
-        error: 'メッセージ送信に失敗しました',
-        details: responseData.error,
+        error: errorMessage,
+        details: errorDetails,
+        recipientId: recipientId,
         suggestion: {
-          title: 'エラーの解決方法',
+          title: '解決方法',
           options: [
-            'アクセストークンの有効期限を確認',
-            '受信者IDが正しいか確認',
-            'Facebook APIの権限を確認'
+            '正しいFacebook IDを入力 (例: 100012345678901)',
+            '完全なプロフィールURLを入力',
+            '/dashboard-authでFacebook認証を再実行',
+            'アクセストークンの有効期限を確認'
           ]
+        },
+        debugInfo: {
+          apiVersion: 'v18.0',
+          tokenLength: token?.length || 0,
+          recipientIdFormat: recipientId
         }
       }, { status: 400 })
     }
@@ -125,19 +144,23 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('🔥 直接送信APIエラー:', error)
+    console.error('🔥 直接送信APIエラー:', {
+      message: error.message,
+      stack: error.stack,
+      recipientId,
+      messageLength: message?.length
+    })
     
     return NextResponse.json({
       error: error.message || '送信に失敗しました',
-      demoMode: true,
+      details: '予期しないエラーが発生しました',
       suggestion: {
-        title: 'デモモードの制限',
-        message: '現在デモモードで動作しています。実際のメッセージ送信には設定が必要です。',
+        title: 'トラブルシューティング',
         steps: [
-          '1. Facebook開発者アカウントを作成',
-          '2. Messengerアプリを設定',
-          '3. アクセストークンを取得',
-          '4. 環境変数に設定'
+          '1. /dashboard-authでFacebook認証が完了しているか確認',
+          '2. 受信者IDが正しい形式か確認',
+          '3. ネットワーク接続を確認',
+          '4. 再度メッセージ送信を試す'
         ]
       }
     }, { status: 500 })
@@ -149,12 +172,12 @@ export async function GET() {
   return NextResponse.json({
     endpoint: '/api/messages/send-direct-new',
     method: 'POST',
-    status: 'デモモード動作中',
+    status: '本番モード動作中',
     
-    demoMode: {
-      active: true,
-      reason: '環境変数 FACEBOOK_USER_ACCESS_TOKEN が未設定',
-      behavior: 'メッセージ送信をシミュレートして成功レスポンスを返します'
+    authentication: {
+      required: true,
+      method: 'Facebook OAuth 2.0',
+      tokenSource: 'クライアントから送信または環境変数'
     },
     
     requiredParams: {
