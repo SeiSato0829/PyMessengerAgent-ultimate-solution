@@ -71,15 +71,8 @@ export function DirectMessageSender() {
   }
 
   const getRecipientIdFromUrl = (url: string) => {
-    try {
-      const match = url.match(/(?:facebook\.com\/|fb\.com\/)([^/?]+)/)
-      if (match) {
-        return match[1]
-      }
-      return url
-    } catch {
-      return url
-    }
+    // そのまま返す（サーバー側で処理する）
+    return url
   }
 
   return (

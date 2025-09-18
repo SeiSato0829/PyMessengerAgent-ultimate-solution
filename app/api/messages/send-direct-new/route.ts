@@ -18,12 +18,34 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // 受信者IDの検証（Facebook IDは数字またはユーザー名）
-    if (recipientId === 'profile.php' || recipientId.length < 5) {
+    // 受信者IDの検証とURL解析
+    let processedRecipientId = recipientId
+    
+    // FacebookプロフィールURLからIDを抽出
+    if (recipientId.includes('facebook.com') || recipientId.includes('fb.com')) {
+      const patterns = [
+        /facebook\.com\/profile\.php\?id=(\d+)/,
+        /facebook\.com\/([^/?\s]+)/,
+        /fb\.com\/([^/?\s]+)/
+      ]
+      
+      for (const pattern of patterns) {
+        const match = recipientId.match(pattern)
+        if (match && match[1]) {
+          processedRecipientId = match[1]
+          console.log('📝 URLからID抽出:', recipientId, '=>', processedRecipientId)
+          break
+        }
+      }
+    }
+    
+    // 抽出後のID検証
+    if (!processedRecipientId || processedRecipientId.length < 3) {
       return NextResponse.json({
-        error: '有効なFacebook IDまたは完全なプロフィールURLを入力してください',
+        error: '有効なFacebook IDまたはプロフィールURLを入力してください',
         example: '例: 100012345678901 または https://facebook.com/profile.php?id=100012345678901',
-        receivedValue: recipientId
+        receivedValue: recipientId,
+        processedValue: processedRecipientId
       }, { status: 400 })
     }
 
@@ -50,8 +72,10 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('📤 実際のメッセージ送信開始:', {
-      recipientId,
+      originalRecipientId: recipientId,
+      processedRecipientId,
       messageLength: message.length,
+      tokenLength: token?.length || 0,
       timestamp: new Date().toISOString()
     })
 
@@ -61,7 +85,7 @@ export async function POST(request: NextRequest) {
     
     const payload = {
       recipient: {
-        id: recipientId
+        id: processedRecipientId  // URLから抽出したIDを使用
       },
       message: {
         text: message
@@ -71,7 +95,8 @@ export async function POST(request: NextRequest) {
 
     console.log('📡 Send API呼び出し:', {
       url: sendUrl,
-      recipientId
+      recipientId: processedRecipientId,
+      payload
     })
 
     const response = await fetch(sendUrl, {
