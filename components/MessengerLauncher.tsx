@@ -25,7 +25,7 @@ export function MessengerLauncher() {
   }
 
   // Messengerを新しいウィンドウで開く
-  const openMessenger = () => {
+  const openMessenger = async () => {
     if (!recipientId) {
       alert('受信者IDまたはURLを入力してください')
       return
@@ -33,44 +33,107 @@ export function MessengerLauncher() {
 
     setLoading(true)
     
-    const processedId = extractIdFromUrl(recipientId)
-    
-    // Messengerを開く複数の方法を試す
-    const methods = [
-      // 方法1: m.me URL（最も信頼性が高い）
-      () => {
-        const url = `https://m.me/${processedId}`
-        const params = message ? `?text=${encodeURIComponent(message)}` : ''
-        window.open(url + params, '_blank', 'width=600,height=700')
-      },
-      
-      // 方法2: Facebook Messages URL
-      () => {
-        const url = `https://www.facebook.com/messages/t/${processedId}`
-        window.open(url, '_blank', 'width=800,height=600')
-      },
-      
-      // 方法3: Mobile Messenger URL
-      () => {
-        window.location.href = `fb-messenger://user/${processedId}`
-      }
-    ]
+    try {
+      // 新しいAPIエンドポイントを使用
+      const response = await fetch('/api/messages/direct-messenger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId,
+          message
+        })
+      })
 
-    // 最初の方法を実行
-    methods[0]()
-    
-    setTimeout(() => {
-      setLoading(false)
-      // 成功メッセージ
-      const successMsg = document.createElement('div')
-      successMsg.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50'
-      successMsg.innerHTML = '✅ Messengerウィンドウを開きました'
-      document.body.appendChild(successMsg)
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        // メッセージをクリップボードにコピー
+        if (message) {
+          try {
+            await navigator.clipboard.writeText(message)
+            console.log('📋 メッセージをクリップボードにコピーしました:', message)
+          } catch (err) {
+            console.log('クリップボードコピー失敗:', err)
+          }
+        }
+
+        // 複数のMessengerウィンドウを順次開く
+        const urls = data.urls
+        
+        // Primary URL (Facebook Messages)
+        const primaryWindow = window.open(
+          urls.primary,
+          'messenger_primary',
+          'width=900,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no'
+        )
+        
+        // 2秒後にSecondary URL (m.me)
+        setTimeout(() => {
+          const secondaryWindow = window.open(
+            urls.secondary,
+            'messenger_secondary',
+            'width=600,height=700,scrollbars=yes,resizable=yes'
+          )
+        }, 2000)
+        
+        // モバイルの場合はアプリも起動
+        if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+          setTimeout(() => {
+            window.location.href = urls.mobile
+          }, 4000)
+        }
+
+        // 成功メッセージ
+        const successMsg = document.createElement('div')
+        successMsg.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-sm'
+        successMsg.innerHTML = `
+          <div class="font-bold mb-2">✅ Messenger起動成功！</div>
+          <div class="text-sm">
+            ${message ? `📋 "${message.substring(0, 30)}${message.length > 30 ? '...' : ''}"<br>クリップボードにコピーしました` : ''}
+            <br>📱 受信者: ${data.originalInput}
+            <br>🔗 複数のウィンドウを開きました
+          </div>
+        `
+        document.body.appendChild(successMsg)
+        
+        setTimeout(() => {
+          successMsg.remove()
+        }, 8000)
+
+      } else {
+        throw new Error(data.error || 'Messenger起動に失敗しました')
+      }
+      
+    } catch (error: any) {
+      console.error('Messenger起動エラー:', error)
+      
+      // エラーの場合でも従来の方法で試す
+      const processedId = extractIdFromUrl(recipientId)
+      const fallbackUrl = `https://www.facebook.com/messages/t/${processedId}`
+      
+      window.open(
+        fallbackUrl,
+        'messenger_fallback',
+        'width=800,height=700,scrollbars=yes,resizable=yes'
+      )
+
+      const errorMsg = document.createElement('div')
+      errorMsg.className = 'fixed bottom-4 right-4 bg-orange-600 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-sm'
+      errorMsg.innerHTML = `
+        <div class="font-bold mb-2">⚠️ フォールバック起動</div>
+        <div class="text-sm">
+          通常のMessengerウィンドウを開きました<br>
+          手動でメッセージを送信してください
+        </div>
+      `
+      document.body.appendChild(errorMsg)
       
       setTimeout(() => {
-        successMsg.remove()
-      }, 3000)
-    }, 1000)
+        errorMsg.remove()
+      }, 6000)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
