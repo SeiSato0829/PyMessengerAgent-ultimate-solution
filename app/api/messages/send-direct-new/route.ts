@@ -80,26 +80,28 @@ export async function POST(request: NextRequest) {
     })
 
     // 実際のFacebook API呼び出し（本番モード）
-    const apiVersion = 'v18.0'
-    const sendUrl = `https://graph.facebook.com/${apiVersion}/me/messages`
+    const apiVersion = 'v19.0'  // 最新バージョンに更新
+    
+    // メッセージリクエストとして送信を試す
+    // 方法1: Conversations APIを使用
+    const sendUrl = `https://graph.facebook.com/${apiVersion}/${processedRecipientId}/messages`
     
     const payload = {
-      recipient: {
-        id: processedRecipientId  // URLから抽出したIDを使用
-      },
-      message: {
-        text: message
-      },
-      messaging_type: 'RESPONSE'
+      message: message,
+      // メッセージリクエストとして送信
+      messaging_type: 'MESSAGE_TAG',
+      tag: 'CONFIRMED_EVENT_UPDATE'  // メッセージタグを追加
     }
 
-    console.log('📡 Send API呼び出し:', {
+    console.log('📡 Messenger API呼び出し:', {
       url: sendUrl,
       recipientId: processedRecipientId,
+      method: 'MESSAGE_REQUEST',
       payload
     })
 
-    const response = await fetch(sendUrl, {
+    // 方法1が失敗した場合のフォールバック
+    let response = await fetch(sendUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -107,6 +109,31 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(payload)
     })
+
+    // 方法1が失敗した場合、方法2を試す
+    if (!response.ok) {
+      console.log('🔄 方法2: Send APIを試します')
+      
+      const alternativeUrl = `https://graph.facebook.com/${apiVersion}/me/messages`
+      const alternativePayload = {
+        recipient: {
+          id: processedRecipientId
+        },
+        message: {
+          text: message
+        },
+        messaging_type: 'UPDATE'  // メッセージリクエストとしてUPDATEを使用
+      }
+
+      response = await fetch(alternativeUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(alternativePayload)
+      })
+    }
 
     const responseData = await response.json()
     console.log('📥 API応答:', responseData)

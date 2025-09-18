@@ -45,7 +45,8 @@ export function DirectMessageSender() {
     setResult(null)
 
     try {
-      const response = await fetch('/api/messages/send-direct-new', {
+      // 複数のエンドポイントを順番に試す
+      let response = await fetch('/api/messages/send-direct-new', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,6 +55,20 @@ export function DirectMessageSender() {
           accessToken
         })
       })
+      
+      // 最初のAPIが失敗した場合、Conversations APIを試す
+      if (!response.ok && response.status !== 400) {
+        console.log('🔄 Conversations APIを試します...')
+        response = await fetch('/api/messages/send-conversation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId,
+            message,
+            accessToken
+          })
+        })
+      }
 
       const data = await response.json()
 
