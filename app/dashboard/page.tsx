@@ -5,6 +5,7 @@ import { MessengerLauncher } from '@/components/MessengerLauncher'
 import { AutoMessengerSender } from '@/components/AutoMessengerSender'
 import { FacebookBypassSender } from '@/components/FacebookBypassSender'
 import { UltimateFacebookSender } from '@/components/UltimateFacebookSender'
+import { RealMessengerSender } from '@/components/RealMessengerSender'
 
 export default function DashboardPage() {
   const [recipientId, setRecipientId] = useState('')
@@ -90,6 +91,11 @@ export default function DashboardPage() {
           </div>
         </div>
         
+
+        {/* 本気のMessenger自動送信システム (最新) */}
+        <div className="mb-8">
+          <RealMessengerSender />
+        </div>
 
         {/* 究極のFacebook送信システム (最優先) */}
         <div className="mb-8">
