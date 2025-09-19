@@ -36,7 +36,7 @@ interface AuthStatus {
   action?: string
 }
 
-export default function FacebookAuthPanel() {
+export function FacebookAuthPanel() {
   const [authStatus, setAuthStatus] = useState<AuthStatus>({ authenticated: false })
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import FacebookAuthPanel from '@/components/FacebookAuthPanel'
+import { FacebookAuthPanel } from '@/components/FacebookAuthPanel'
 import { DirectMessageSender } from '@/components/DirectMessageSender'
 import { MessengerLauncher } from '@/components/MessengerLauncher'
 import { AutoMessengerSender } from '@/components/AutoMessengerSender'
