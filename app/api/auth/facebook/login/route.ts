@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   const clientId = process.env.FACEBOOK_APP_ID || '1074848747815619'
-  const redirectUri = encodeURIComponent(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/auth/facebook/callback`)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.vercel.app'
+  const redirectUri = encodeURIComponent(`${appUrl}/api/auth/facebook/callback`)
 
   // 必要な権限スコープ
   const scopes = [

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     // Facebook App設定を取得（ハードコーディングも含む）
     const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID || '1074848747815619'
     const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET || 'ae554f1df345416e5d6d08c22d07685d'
-    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.onrender.com'
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.vercel.app'
     const FACEBOOK_REDIRECT_URI = `${APP_URL}/api/auth/facebook/callback`
 
     // デモモード判定を無効化 - 常に本番モードで動作

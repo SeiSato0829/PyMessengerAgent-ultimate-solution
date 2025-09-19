@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     // Facebook App設定を取得
     const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
     const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
-    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.onrender.com'
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.vercel.app'
 
     console.log('🧪 Facebook認証テスト実行:', {
       appId: FACEBOOK_APP_ID,

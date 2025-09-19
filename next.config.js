@@ -13,6 +13,9 @@ if (!process.env.FACEBOOK_APP_ID) {
 if (!process.env.FACEBOOK_APP_SECRET) {
   process.env.FACEBOOK_APP_SECRET = 'ae554f1df345416e5d6d08c22d07685d';
 }
+if (!process.env.NEXT_PUBLIC_APP_URL) {
+  process.env.NEXT_PUBLIC_APP_URL = 'https://pymessengeragent-ultimate-solution.vercel.app';
+}
 
 const nextConfig = {
   reactStrictMode: true,
@@ -26,6 +29,9 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
+    FACEBOOK_APP_SECRET: process.env.FACEBOOK_APP_SECRET,
   },
 }
 
