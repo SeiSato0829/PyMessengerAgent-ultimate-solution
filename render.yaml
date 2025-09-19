@@ -7,10 +7,7 @@ services:
     # plan: pro  # $85/month - エンタープライズ
     
     region: oregon
-    buildCommand: |
-      echo "🚀 Starting build for Starter plan..."
-      bash scripts/render-build.sh
-      echo "✅ Build completed successfully"
+    buildCommand: yarn install --frozen-lockfile && yarn build
       
     startCommand: npm start
     
