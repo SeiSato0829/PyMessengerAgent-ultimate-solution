@@ -1,0 +1,23 @@
+# Railway Nixpacks設定ファイル
+# DockerfileがなくてもNixpacksが自動ビルド
+
+# Node.jsバージョン指定
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "npm-9_x"]
+
+# 依存関係インストール
+[phases.install]
+cmds = ["npm ci --production=false"]
+
+# ビルドコマンド
+[phases.build]
+cmds = ["npm run build"]
+
+# 実行設定
+[start]
+cmd = "npm run start"
+
+# 環境変数
+[variables]
+NODE_ENV = "production"
+NEXT_TELEMETRY_DISABLED = "1"

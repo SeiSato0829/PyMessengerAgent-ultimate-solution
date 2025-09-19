@@ -74,7 +74,18 @@ export async function GET(request: NextRequest) {
     // 環境変数チェック
     const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID || '1074848747815619'
     const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET || 'ae554f1df345416e5d6d08c22d07685d'
-    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.vercel.app'
+
+    // デプロイメント環境に応じてURLを自動設定
+    let APP_URL = process.env.NEXT_PUBLIC_APP_URL
+    if (!APP_URL) {
+      if (process.env.RAILWAY_ENVIRONMENT) {
+        APP_URL = 'https://pymessenger-agent.up.railway.app'
+      } else if (process.env.VERCEL) {
+        APP_URL = 'https://pymessengeragent-ultimate-solution.vercel.app'
+      } else {
+        APP_URL = 'http://localhost:3000'
+      }
+    }
     const FACEBOOK_REDIRECT_URI = `${APP_URL}/api/auth/facebook/callback`
 
     if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {

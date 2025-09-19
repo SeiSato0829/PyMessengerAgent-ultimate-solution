@@ -1,0 +1,49 @@
+# Railway Docker用の除外ファイル
+
+# Git
+.git
+.gitignore
+.github
+
+# Next.js
+.next
+out
+dist
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+!.env.railway
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+docs
+
+# Tests
+__tests__
+*.test.js
+*.spec.js
+coverage
+.nyc_output
+
+# Misc
+.eslintcache
+.npm
+.yarn

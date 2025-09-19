@@ -2,7 +2,18 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   const clientId = process.env.FACEBOOK_APP_ID || '1074848747815619'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pymessengeragent-ultimate-solution.vercel.app'
+
+  // デプロイメント環境に応じてURLを自動設定
+  let appUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (!appUrl) {
+    if (process.env.RAILWAY_ENVIRONMENT) {
+      appUrl = 'https://pymessenger-agent.up.railway.app'
+    } else if (process.env.VERCEL) {
+      appUrl = 'https://pymessengeragent-ultimate-solution.vercel.app'
+    } else {
+      appUrl = 'http://localhost:3000'
+    }
+  }
   const redirectUri = encodeURIComponent(`${appUrl}/api/auth/facebook/callback`)
 
   // 必要な権限スコープ

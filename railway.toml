@@ -1,0 +1,25 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm ci && npm run build"
+
+[deploy]
+startCommand = "npm run start"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 10
+
+[[services]]
+name = "pymessenger-web"
+type = "web"
+port = 3000
+
+[[services]]
+name = "pymessenger-db"
+type = "postgresql"
+version = "14"
+
+[[services]]
+name = "pymessenger-redis"
+type = "redis"
+version = "7"
