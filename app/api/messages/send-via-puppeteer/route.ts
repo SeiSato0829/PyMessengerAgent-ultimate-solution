@@ -6,20 +6,9 @@ import { cookies } from 'next/headers'
  * サーバーサイドでブラウザを操作
  */
 export async function POST(request: NextRequest) {
-  // Puppeteerを動的にインポート（Renderのサーバーでのみ実行）
-  let puppeteer: any
-
-  try {
-    // Renderサーバーでは puppeteer-core を使用
-    try {
-      puppeteer = require('puppeteer-core')
-    } catch {
-      puppeteer = require('puppeteer')
-    }
-  } catch (error) {
-    console.log('Puppeteer not available, falling back to alternative method')
-    return alternativeAutomation(request)
-  }
+  // Renderではpuppeteerを使用できないため、代替方法を使用
+  console.log('Puppeteer automation is not available on Render')
+  return alternativeAutomation(request)
 
   try {
     const body = await request.json()
@@ -252,24 +241,9 @@ async function alternativeAutomation(request: NextRequest) {
   const body = await request.json()
   const { recipientId, message } = body
 
-  // Playwright APIを試す
   try {
-    const playwright = require('playwright')
-    const browser = await playwright.chromium.launch({
-      headless: true
-    })
-
-    const page = await browser.newPage()
-    // ... Playwrightでの自動化処理 ...
-
-    await browser.close()
-
-    return NextResponse.json({
-      success: true,
-      method: 'Playwright Automation'
-    })
-
-  } catch {
+    // Renderでは直接のブラウザ自動化は不可能
+    // 代わりにAPIベースの方法を提案
     // 最終的なフォールバック
     return NextResponse.json({
       success: false,
