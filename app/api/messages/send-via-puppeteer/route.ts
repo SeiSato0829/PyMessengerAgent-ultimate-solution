@@ -241,19 +241,17 @@ async function alternativeAutomation(request: NextRequest) {
   const body = await request.json()
   const { recipientId, message } = body
 
-  try {
-    // Renderでは直接のブラウザ自動化は不可能
-    // 代わりにAPIベースの方法を提案
-    // 最終的なフォールバック
-    return NextResponse.json({
-      success: false,
-      error: 'Server-side automation not available',
-      suggestion: 'Please use the Graph API method or manual sending',
-      alternatives: [
-        'Graph API with proper Page Access Token',
-        'Manual sending via messenger.com',
-        'Mobile app integration'
-      ]
-    })
-  }
+  // Renderでは直接のブラウザ自動化は不可能
+  // 代わりにAPIベースの方法を提案
+  // 最終的なフォールバック
+  return NextResponse.json({
+    success: false,
+    error: 'Server-side automation not available',
+    suggestion: 'Please use the Graph API method or manual sending',
+    alternatives: [
+      'Graph API with proper Page Access Token',
+      'Manual sending via messenger.com',
+      'Mobile app integration'
+    ]
+  })
 }

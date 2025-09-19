@@ -1,5 +1,19 @@
 /** @type {import('next').NextConfig} */
 
+// デフォルト環境変数を設定（Vercelビルド用）
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://rxipbozxhkzvlekrbjud.supabase.co';
+}
+if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4aXBib3p4aGt6dmxla3JianVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU2MDg0NzgsImV4cCI6MjA0MTE4NDQ3OH0.vTWRLqpPjUGTH2U0TBRZLM5N3r86O9E6Eq5INIoL7jY';
+}
+if (!process.env.FACEBOOK_APP_ID) {
+  process.env.FACEBOOK_APP_ID = '1074848747815619';
+}
+if (!process.env.FACEBOOK_APP_SECRET) {
+  process.env.FACEBOOK_APP_SECRET = 'ae554f1df345416e5d6d08c22d07685d';
+}
+
 // 環境変数を明示的にログ出力（ビルド時の確認用）
 console.log('='.repeat(60))
 console.log('Next.js Config - 環境変数状態:')
