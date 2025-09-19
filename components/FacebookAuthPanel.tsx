@@ -456,3 +456,5 @@ export function FacebookAuthPanel() {
     </div>
   )
 }
+
+export default FacebookAuthPanel

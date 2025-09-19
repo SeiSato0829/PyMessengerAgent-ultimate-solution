@@ -193,3 +193,5 @@ export function MessengerLauncher() {
     </div>
   )
 }
+
+export default MessengerLauncher

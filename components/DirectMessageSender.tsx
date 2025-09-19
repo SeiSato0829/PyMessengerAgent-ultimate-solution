@@ -236,3 +236,5 @@ export function DirectMessageSender() {
     </div>
   )
 }
+
+export default DirectMessageSender

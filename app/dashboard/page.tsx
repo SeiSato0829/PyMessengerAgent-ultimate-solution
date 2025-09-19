@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { MessengerLauncher } from '@/components/MessengerLauncher'
-import { AutoMessengerSender } from '@/components/AutoMessengerSender'
-import { FacebookBypassSender } from '@/components/FacebookBypassSender'
-import { UltimateFacebookSender } from '@/components/UltimateFacebookSender'
-import { RealMessengerSender } from '@/components/RealMessengerSender'
+import MessengerLauncher from '../../components/MessengerLauncher'
+import AutoMessengerSender from '../../components/AutoMessengerSender'
+import FacebookBypassSender from '../../components/FacebookBypassSender'
+import UltimateFacebookSender from '../../components/UltimateFacebookSender'
+import RealMessengerSender from '../../components/RealMessengerSender'
 
 export default function DashboardPage() {
   const [recipientId, setRecipientId] = useState('')

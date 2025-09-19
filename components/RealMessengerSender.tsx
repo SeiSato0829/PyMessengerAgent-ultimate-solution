@@ -230,3 +230,5 @@ export function RealMessengerSender() {
     </div>
   )
 }
+
+export default RealMessengerSender

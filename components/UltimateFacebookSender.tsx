@@ -385,3 +385,5 @@ export function UltimateFacebookSender() {
     </div>
   )
 }
+
+export default UltimateFacebookSender

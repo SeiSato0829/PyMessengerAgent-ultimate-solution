@@ -538,3 +538,5 @@ export function AutoMessengerSender() {
     </div>
   )
 }
+
+export default AutoMessengerSender

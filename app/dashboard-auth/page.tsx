@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FacebookAuthPanel } from '@/components/FacebookAuthPanel'
-import { DirectMessageSender } from '@/components/DirectMessageSender'
-import { MessengerLauncher } from '@/components/MessengerLauncher'
-import { AutoMessengerSender } from '@/components/AutoMessengerSender'
-import { FacebookBypassSender } from '@/components/FacebookBypassSender'
-import { UltimateFacebookSender } from '@/components/UltimateFacebookSender'
+import FacebookAuthPanel from '../../components/FacebookAuthPanel'
+import DirectMessageSender from '../../components/DirectMessageSender'
+import MessengerLauncher from '../../components/MessengerLauncher'
+import AutoMessengerSender from '../../components/AutoMessengerSender'
+import FacebookBypassSender from '../../components/FacebookBypassSender'
+import UltimateFacebookSender from '../../components/UltimateFacebookSender'
 
 export default function AuthenticatedDashboard() {
   const [authStatus, setAuthStatus] = useState<any>(null)

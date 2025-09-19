@@ -1,9 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import { dummySupabase } from './dummy-client'
 
-// 環境変数の取得（Render.comビルド時に確実に読み込む）
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://demo.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlbW8iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTYwMTU0MDQwMCwiZXhwIjoxOTE2ODk5MjAwfQ.demo_key_for_development_only'
+// 環境変数の取得（Vercelビルド時に確実に読み込む）
+// Next.jsではビルド時にNEXT_PUBLIC_*環境変数が埋め込まれる
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rxipbozxhkzvlekrbjud.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4aXBib3p4aGt6dmxla3JianVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU2MDg0NzgsImV4cCI6MjA0MTE4NDQ3OH0.vTWRLqpPjUGTH2U0TBRZLM5N3r86O9E6Eq5INIoL7jY'
 
 // ビルド時の環境変数状態をログ出力
 if (typeof window === 'undefined') {
@@ -13,10 +14,7 @@ if (typeof window === 'undefined') {
 }
 
 // Supabase設定の検証（修正版）
-const isDummyMode = supabaseUrl === 'https://demo.supabase.co' ||
-                    supabaseUrl.includes('xxxxx') ||
-                    supabaseUrl.includes('your-project') ||
-                    supabaseAnonKey.includes('demo_key_for_development_only')
+const isDummyMode = false // 常に実際のSupabaseを使用
 
 if (isDummyMode) {
   console.warn('⚠️ Supabase未設定：デモモードで動作中')
