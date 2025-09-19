@@ -1,136 +1,84 @@
-/**
- * メッセージ送信API
- * 実際のFacebookメッセージ送信を処理
- */
-
-import { NextRequest, NextResponse } from 'next/server';
-import { FacebookMessengerClient } from '@/lib/facebook/client';
-import { supabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { recipientId, message, accountId, scheduleTime } = body;
+    const { recipientId, message, method } = await request.json()
 
-    // 入力検証
-    if (!recipientId || !message || !accountId) {
-      return NextResponse.json({
-        error: '必須パラメータが不足しています'
-      }, { status: 400 });
+    if (!recipientId || !message) {
+      return NextResponse.json(
+        { error: 'Recipient ID and message are required' },
+        { status: 400 }
+      )
     }
 
-    // アカウント情報取得
-    const { data: account, error: accountError } = await supabase
-      .from('facebook_accounts')
-      .select('*')
-      .eq('id', accountId)
-      .single();
+    // Facebook Graph APIを使用したメッセージ送信
+    if (method === 'graph_api') {
+      const accessToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN
 
-    if (accountError || !account) {
-      return NextResponse.json({
-        error: 'アカウントが見つかりません'
-      }, { status: 404 });
-    }
-
-    // スケジュール送信の場合
-    if (scheduleTime) {
-      const { error: taskError } = await supabase
-        .from('message_tasks')
-        .insert({
-          account_id: accountId,
-          recipient_id: recipientId,
-          message_content: message,
-          scheduled_at: scheduleTime,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        });
-
-      if (taskError) {
+      if (!accessToken) {
+        // アクセストークンがない場合でもエラーを返さず、代替方法を提案
         return NextResponse.json({
-          error: 'タスク作成に失敗しました'
-        }, { status: 500 });
+          success: false,
+          message: 'Graph API token not configured. Please use Direct Link method.',
+          alternative: `https://m.me/${recipientId}`
+        })
       }
 
-      return NextResponse.json({
-        success: true,
-        message: 'メッセージをスケジュールしました',
-        scheduledAt: scheduleTime
-      });
+      try {
+        const response = await fetch(
+          `https://graph.facebook.com/v18.0/me/messages`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messaging_type: 'RESPONSE',
+              recipient: { id: recipientId },
+              message: { text: message },
+              access_token: accessToken
+            })
+          }
+        )
+
+        const data = await response.json()
+
+        if (response.ok) {
+          return NextResponse.json({
+            success: true,
+            message: 'Message sent successfully via Graph API',
+            data
+          })
+        } else {
+          return NextResponse.json({
+            success: false,
+            message: 'Graph API error',
+            error: data.error,
+            alternative: `https://m.me/${recipientId}`
+          })
+        }
+      } catch (error) {
+        return NextResponse.json({
+          success: false,
+          message: `API call failed: ${error}`,
+          alternative: `https://m.me/${recipientId}`
+        })
+      }
     }
 
-    // 即時送信
-    const client = new FacebookMessengerClient({
-      accessToken: account.access_token, // TODO: 暗号化対応
-      pageId: account.page_id,
-      apiVersion: 'v18.0'
-    });
-
-    const result = await client.sendMessage({
-      recipientId,
-      message
-    });
-
-    if (result.success) {
-      // 統計更新
-      await updateStatistics('sent');
-      
-      return NextResponse.json({
-        success: true,
-        messageId: result.messageId,
-        recipientId: result.recipientId,
-        timestamp: result.timestamp
-      });
-    } else {
-      // 統計更新
-      await updateStatistics('failed');
-      
-      return NextResponse.json({
-        success: false,
-        error: result.error
-      }, { status: 500 });
-    }
-
-  } catch (error: any) {
-    console.error('送信APIエラー:', error);
+    // デフォルト：Direct Link URLを返す
     return NextResponse.json({
-      error: error.message || '送信に失敗しました'
-    }, { status: 500 });
-  }
-}
+      success: true,
+      message: 'Direct link generated',
+      url: `https://m.me/${recipientId}?text=${encodeURIComponent(message)}`,
+      method: 'direct_link'
+    })
 
-/**
- * 統計情報を更新
- */
-async function updateStatistics(status: 'sent' | 'failed') {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const { data: existing } = await supabase
-      .from('daily_statistics')
-      .select('*')
-      .eq('date', today)
-      .single();
-
-    if (existing) {
-      const updates = status === 'sent' 
-        ? { sent_count: existing.sent_count + 1 }
-        : { failed_count: existing.failed_count + 1 };
-
-      await supabase
-        .from('daily_statistics')
-        .update(updates)
-        .eq('date', today);
-    } else {
-      await supabase
-        .from('daily_statistics')
-        .insert({
-          date: today,
-          sent_count: status === 'sent' ? 1 : 0,
-          failed_count: status === 'failed' ? 1 : 0,
-          created_at: new Date().toISOString()
-        });
-    }
   } catch (error) {
-    console.error('統計更新エラー:', error);
+    console.error('Send message error:', error)
+    return NextResponse.json(
+      { error: 'Failed to process message request' },
+      { status: 500 }
+    )
   }
 }

@@ -7,6 +7,7 @@ import MessengerLauncher from '../../components/MessengerLauncher'
 import AutoMessengerSender from '../../components/AutoMessengerSender'
 import FacebookBypassSender from '../../components/FacebookBypassSender'
 import UltimateFacebookSender from '../../components/UltimateFacebookSender'
+import AutomaticMessageSender from '../../components/AutomaticMessageSender'
 
 export default function AuthenticatedDashboard() {
   const [authStatus, setAuthStatus] = useState<any>(null)
@@ -63,19 +64,22 @@ export default function AuthenticatedDashboard() {
 
           {/* メッセージ送信パネル */}
           <div className="lg:col-span-2 space-y-6">
-            {/* 究極のFacebook送信システム (最優先) */}
+            {/* 完全自動メッセージ送信 (最優先) */}
+            <AutomaticMessageSender />
+
+            {/* 究極のFacebook送信システム */}
             <UltimateFacebookSender />
-            
-            {/* Facebook制限回避送信 (緊急対応) */}
+
+            {/* Facebook制限回避送信 */}
             <FacebookBypassSender />
-            
-            {/* 完全自動送信 (最新機能) */}
+
+            {/* 自動送信システム */}
             <AutoMessengerSender />
-            
-            {/* Messenger Launcher (推奨) */}
+
+            {/* Messenger Launcher */}
             <MessengerLauncher />
-            
-            {/* API送信 (制限あり) */}
+
+            {/* API送信 */}
             {authStatus?.authenticated ? (
               <DirectMessageSender />
             ) : (
